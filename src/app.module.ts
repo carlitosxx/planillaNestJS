@@ -3,7 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeesModule } from './employees/employees.module';
 import { CommonModule } from './common/common.module';
-
+import { FilesModule } from './files/files.module';
+import { join } from 'path';
+import { EntityModule } from './entity/entity.module';
+import { AuthModule } from './auth/auth.module';
+import {ServeStaticModule}from '@nestjs/serve-static' 
 
 
 @Module({
@@ -19,8 +23,14 @@ import { CommonModule } from './common/common.module';
      autoLoadEntities:true,
      synchronize:true 
     }),
+    // ServeStaticModule.forRoot({
+    //   rootPath:join(__dirname,'..','public')
+    // }),
     EmployeesModule,
-    CommonModule
+    CommonModule,
+    FilesModule,
+    EntityModule,
+    AuthModule
   ],
 
 })

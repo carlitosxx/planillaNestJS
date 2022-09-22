@@ -1,8 +1,16 @@
+import { Type } from "class-transformer";
+import { ColumnNumericTransformer } from "src/helper/column-numeric-Transformer";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Condition } from "./condition.entity";
+import { Establishment } from "./establishment.entity";
+import { LaborRegime } from "./laborRegime.entity";
+import { OccupationalGroup } from "./occupationalGroup.entity";
 import { OrganicUnit } from "./organicUnit.entity";
+import { PensionAdministrator } from "./pensionAdministrator.entity";
+import { Position } from "./position.entity";
 import { Salary } from "./salary.entity";
 import { TypeEmployee } from "./typeEmployee.entity";
+import { Workday } from "./workday.entity";
 /**TABLA EMPLEADO */
 @Entity()
 export class Employee {
@@ -15,7 +23,11 @@ export class Employee {
     @Column("text")
     employeeFullname: string;
 
-    @Column("numeric")
+    @Column("numeric", {
+        precision: 7,
+        scale: 2,
+        transformer: new ColumnNumericTransformer(),
+      })    
     employeeStatus: number;
 
     @Column({type:"date",nullable:false})
@@ -39,8 +51,32 @@ export class Employee {
     @JoinColumn({name:'conditionId'})
     condition: Condition
 
+    @ManyToOne(()=>LaborRegime,laborRegime=>laborRegime.laborRegimeId)
+    @JoinColumn({name:'laborRegimeId'})
+    laborRegime: LaborRegime
+
+    @ManyToOne(()=>OccupationalGroup,occupationalGroup=>occupationalGroup.occupationalGroupId)
+    @JoinColumn({name:'occupationalGroupId'})
+    occupationalGroup: OccupationalGroup
+
+    @ManyToOne(()=>Establishment,establishment=>establishment.establishmentId)
+    @JoinColumn({name:'establishmentId'})
+    establishment: Establishment
+
+    @ManyToOne(()=>Position,position=>position.positionId)
+    @JoinColumn({name:'positionId'})
+    position: Position
+
+    @ManyToOne(()=>Workday,workday=>workday.workdayId)
+    @JoinColumn({name:'workdayId'})
+    workday: Workday
+
     @ManyToOne(()=>Salary,salary=>salary.salaryId)
     @JoinColumn({name:'salaryId'})
-    salary:Salary
+    salary:Salary    
+
+    @ManyToOne(()=>PensionAdministrator,pensionAdministrator=>pensionAdministrator.pensionAdministratorId)
+    @JoinColumn({name:'pensionAdministratorId'})
+    pensionAdministrator:PensionAdministrator
 
 }

@@ -16,4 +16,8 @@ export class PaginationDto{
     @IsOptional()
     @IsUUID()
     employeeCategoryId?:string;
+
+    @IsOptional()
+    @IsUUID()
+    pensionSystemId?:string;
 }

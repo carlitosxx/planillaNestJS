@@ -33,7 +33,7 @@ export class EmployeesService {
       order:{
         employeeDni:1
       } ,
-      relations:['typeEmployee','organicUnit','condition','salary','salary.employeeCategory']
+      relations:['typeEmployee','organicUnit','condition','laborRegime','occupationalGroup','establishment','position','workday','salary','salary.employeeCategory','pensionAdministrator','pensionAdministrator.pensionSystem']
     })    
     return {
       total:query[1],
@@ -46,7 +46,7 @@ export class EmployeesService {
     if(isUUID(term)){
       employee=await this.employeeRepository.findOne({
         where:{employeeId:term},
-        relations:['typeEmployee','organicUnit','condition','salary','salary.employeeCategory']})
+        relations:['typeEmployee','organicUnit','condition','laborRegime','occupationalGroup','establishment','position','workday','salary','salary.employeeCategory','pensionAdministrator','pensionAdministrator.pensionSystem']})
     }else{      
       const queryBuilder= this.employeeRepository.createQueryBuilder('employee');
       employee=await queryBuilder
@@ -55,6 +55,13 @@ export class EmployeesService {
         .leftJoinAndSelect('employee.organicUnit','employeeOrganicUnit')
         .leftJoinAndSelect('employee.salary','salary')
         .leftJoinAndSelect('salary.employeeCategory','employeeCategory')
+        .leftJoinAndSelect('employee.pensionAdministrator','pensionAdministrator')
+        .leftJoinAndSelect('pensionAdministrator.pensionSystem','pensionSystem')
+        .leftJoinAndSelect('employee.laborRegime','laborRegime')
+        .leftJoinAndSelect('employee.occupationalGroup','occupationalGroup')
+        .leftJoinAndSelect('employee.establishment','establishment')
+        .leftJoinAndSelect('employee.position','position')
+        .leftJoinAndSelect('employee.workday','workday')
         .where('"employeeFullname"=:employeeFullname or "employeeDni"=:employeeDni',
           {employeeFullname:term,employeeDni:term}).getOne();
     } 

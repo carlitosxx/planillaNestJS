@@ -26,19 +26,25 @@ import { SalaryController } from './controllers/salary.controller';
 import { SalaryService } from './services/salary.service';
 import { PensionSystemController } from './controllers/pension-system.controller';
 import { PensionSystemService } from './services/pension-system.service';
-
+import { PensionAdministratorController } from './controllers/pension-administrator.controller';
+import { PensionAdministratorService } from './services/pension-administrator.service';
+import { AuthModule } from 'src/auth/auth.module';
+// import {PassportModule}
 @Module({
   controllers: [EmployeesController, TypeEmployeeController, OrganicUnitController,
     ConditionController, LaborRegimeController, OccupationalGroupController,
     EstablishmentController, PositionController, WorkdayController, EmployeeCategoryController,
     SalaryController,
-    PensionSystemController],
+    PensionSystemController,
+    PensionAdministratorController],
   providers: [EmployeesService, TypeEmployeeService, OrganicUnitService,
     ConditionService, LaborRegimeService, OccupationalGroupService,
     EstablishmentService, PositionService, WorkdayService, EmployeeCategoryService,
     SalaryService,
-    PensionSystemService],
-  imports:[
+    PensionSystemService,
+    PensionAdministratorService],
+  imports:[   
+    AuthModule,    
     TypeOrmModule.forFeature([
       Employee, TypeEmployee, OrganicUnit, Condition, LaborRegime, OccupationalGroup,
       Establishment, Position, Workday, EmployeeCategory, Salary, PensionSystem,
