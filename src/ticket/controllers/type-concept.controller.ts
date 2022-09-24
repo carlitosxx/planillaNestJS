@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { TypeConceptService } from '../services/type-concept.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Authorization } from 'src/auth/decorators';
@@ -23,7 +23,7 @@ export class TypeConceptController {
     findOne(@Param('term') term: string) {
     return this.typeConceptService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.admin)
     update(
       @Param('id',ParseUUIDPipe) id: string,

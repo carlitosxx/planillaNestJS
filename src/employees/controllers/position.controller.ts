@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { PositionService } from '../services/position.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreatePositionDto } from '../dto/create-position.dto';
@@ -24,7 +24,7 @@ export class PositionController {
     findOne(@Param('term') term: string) {
     return this.positionService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

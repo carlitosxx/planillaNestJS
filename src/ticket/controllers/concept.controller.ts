@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { ConceptService } from '../services/concept.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateConceptDto } from '../dto/create-concept.dto';
@@ -24,7 +24,7 @@ export class ConceptController {
     findOne(@Param('term') term: string) {
     return this.conceptService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

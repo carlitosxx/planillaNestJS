@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { EmployeesService } from '../services/employees.service';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
 import { UpdateEmployeeDto } from '../dto/update-employee.dto';
@@ -28,7 +28,7 @@ export class EmployeesController {
     return this.employeesService.findOne(term);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @Authorization(ValidRoles.user)
   update(
     @Param('id',ParseUUIDPipe) id: string,

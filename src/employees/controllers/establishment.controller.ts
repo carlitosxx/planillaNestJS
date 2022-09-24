@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { EstablishmentService } from '../services/establishment.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateEstablishmentDto } from '../dto/create-establishment.dto';
@@ -24,7 +24,7 @@ export class EstablishmentController {
     findOne(@Param('term') term: string) {
     return this.establishmentService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

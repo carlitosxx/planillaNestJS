@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { BudgetGoalService } from '../services/budget-goal.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateBudgetGoalDto } from '../dto/create-budget-goal.dto';
@@ -23,7 +23,7 @@ export class BudgetGoalController {
     findOne(@Param('term') term: string) {
     return this.budgetGoalService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

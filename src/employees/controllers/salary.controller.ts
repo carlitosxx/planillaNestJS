@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { SalaryService } from '../services/salary.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateSalaryDto } from '../dto/create-salary.dto';
@@ -23,7 +23,7 @@ export class SalaryController {
     findOne(@Param('term') term: string) {
     return this.salaryService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

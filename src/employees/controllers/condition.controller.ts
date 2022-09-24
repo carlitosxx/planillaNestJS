@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { ConditionService } from '../services/condition.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateConditionDto } from '../dto/create-condition.dto';
@@ -23,7 +23,7 @@ export class ConditionController {
     findOne(@Param('term') term: string) {
     return this.conditionService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

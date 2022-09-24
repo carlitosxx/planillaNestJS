@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { Authorization } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 // import { create } from 'domain';
@@ -25,7 +25,7 @@ export class TypeEmployeeController {
     findOne(@Param('term') term: string) {
     return this.typeEmployeeService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

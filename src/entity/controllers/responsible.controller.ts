@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, UseInterceptors, UploadedFile, BadRequestException, Put } from '@nestjs/common';
 import { ResponsibleService } from '../services/responsible.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateResponsibleDto } from '../dto/create-responsible.dto';
@@ -38,7 +38,7 @@ export class ResponsibleController {
     findOne(@Param('term') term: string) {
     return this.responsibleService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

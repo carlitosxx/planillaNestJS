@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { FinancingService } from '../services/financing.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateFinancingDto } from '../dto/create-financing.dto';
@@ -23,7 +23,7 @@ export class FinancingController {
     findOne(@Param('term') term: string) {
     return this.financingService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

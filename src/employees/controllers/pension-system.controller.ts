@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { PensionSystemService } from '../services/pension-system.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreatePensionSystemDto } from '../dto/create-pension-system.dto';
@@ -24,7 +24,7 @@ export class PensionSystemController {
     findOne(@Param('term') term: string) {
     return this.pensionSystemService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

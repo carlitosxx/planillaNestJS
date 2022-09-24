@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { TicketTempService } from '../services/ticket-temp.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateTicketTempDto,UpdateTicketTempDto } from '../dto';
@@ -23,7 +23,7 @@ export class TicketTempController {
     findOne(@Param('term') term: string) {
     return this.ticketTempService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

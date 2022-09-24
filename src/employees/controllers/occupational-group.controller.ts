@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { OccupationalGroupService } from '../services/occupational-group.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateOccupationalGroupDto } from '../dto/create-occupational-group.dto';
@@ -24,7 +24,7 @@ export class OccupationalGroupController {
     findOne(@Param('term') term: string) {
     return this.occupationalGroupService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Query, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Query, ParseUUIDPipe, Put } from '@nestjs/common';
 import { EntityService } from '../services/entity.service';
 import { CreateEntityDto } from '../dto/create-entity.dto';
 import { UpdateEntityDto } from '../dto/update-entity.dto';
@@ -37,7 +37,7 @@ export class EntityController {
   findOne(@Param('term') term: string) {
   return this.entityService.findOne(term);
   }
-  @Patch(':id')
+  @Put(':id')
   @Authorization(ValidRoles.user)
   @UseInterceptors( FileInterceptor('file',{
     fileFilter:fileFilter,

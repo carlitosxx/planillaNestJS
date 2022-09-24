@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { OrganicUnitService } from '../services/organic-unit.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateOrganicUnitDto } from '../dto/create-organic-unit.dto';
@@ -24,7 +24,7 @@ export class OrganicUnitController {
     findOne(@Param('term') term: string) {
     return this.organicUnitService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,

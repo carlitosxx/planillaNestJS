@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { LaborRegimeService } from '../services/labor-regime.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateLaborRegimeDto } from '../dto/create-labor-regime.dto';
@@ -24,7 +24,7 @@ export class LaborRegimeController {
     findOne(@Param('term') term: string) {
     return this.laborRegimeService.findOne(term);
     }
-    @Patch(':id')
+    @Put(':id')
     @Authorization(ValidRoles.user)
     update(
       @Param('id',ParseUUIDPipe) id: string,
