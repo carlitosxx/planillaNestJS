@@ -14,12 +14,15 @@ export class TicketTempService {
         private readonly ticketTempRepository:Repository<TicketTemp>
     ){}
     /**TODO: CREAR */
-    async create(createTicketTempDto:CreateTicketTempDto){
-        try {            
+    async create(createTicketTempDto:CreateTicketTempDto){       
+          const verify=await this.ticketTempRepository.findBy({ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative})
+          if(verify.length!=0) throw new  BadRequestException(`Key ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) already exists.`) 
+        try {           
             const data=this.ticketTempRepository.create(createTicketTempDto)
-            await this.ticketTempRepository.save(data);
+            await this.ticketTempRepository.save(data);           
             return data;
         } catch (error) {
+          console.log('error')
             this.handleDBExceptions(error);
         }
     }
@@ -48,11 +51,11 @@ export class TicketTempService {
     async findOne(term: string) {
       
         let data:TicketTemp
-        if(isUUID(term)){
-            data=await this.ticketTempRepository.findOne({
-                where:{ticketTempId:term},
-                relations:['entity','responsible']})
-        }else{      
+        // if(isUUID(term)){
+        //     data=await this.ticketTempRepository.findOne({
+        //         where:{ticketTempId:term},
+        //         relations:['entity','responsible']})
+        // }else{      
           console.log('pase por aqui');
           const queryBuilder= this.ticketTempRepository.createQueryBuilder('ticketTemp');
           data=await queryBuilder
@@ -61,15 +64,17 @@ export class TicketTempService {
             // .leftJoinAndSelect('ticketTemp.responsible','responsible')
             .where('"ticketTempCorrelative"=:ticketTempCorrelative',
               {ticketTempCorrelative:term}).getOne();
-        } 
+        // } 
         if(!data)  throw new NotFoundException(`The search with ${term} not found`)
         return data
+    
+       
       }
 
     /**TODO: ACTUALIZAR */
     async update(id: string, updateTicketTempDto: UpdateTicketTempDto) {      
         var data=await this.ticketTempRepository.preload({
-            ticketTempId:id,
+            ticketTempCorrelative:id,
           ...updateTicketTempDto
         });
         if(!data) throw new NotFoundException(`The search with id: ${id} not found`)

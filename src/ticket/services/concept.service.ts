@@ -32,7 +32,7 @@ export class ConceptService {
           skip:calcSkip,
           relations:['typeConcept'],
           order:{
-            conceptCode:1
+            conceptGlosa:1
           }         
         }
         )    
@@ -50,8 +50,8 @@ export class ConceptService {
           const queryBuilder= this.conceptRepository.createQueryBuilder('concept');
           data=await queryBuilder
           .leftJoinAndSelect('concept.typeConcept','typeConcept')
-            .where('"conceptDescription"=:conceptDescription or "conceptCode"=:conceptCode',
-              {conceptDescription:term,conceptCode:term}).getOne();
+            .where('"conceptDescription"=:conceptDescription or "conceptGlosa"=:conceptGlosa',
+              {conceptDescription:term,conceptGlosa:term}).getOne();
         } 
         if(!data)  throw new NotFoundException(`The search with ${term} not found`)
         return data
@@ -63,7 +63,7 @@ export class ConceptService {
             conceptId:id,
           ...udateConceptDto
         });
-        if(!data) throw new NotFoundException(`Type concept with id: ${id} not found`)
+        if(!data) throw new NotFoundException(`data with id: ${id} not found`)
       try {  
           await this.conceptRepository.save(data)        
           return data;       

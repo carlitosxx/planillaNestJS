@@ -2,14 +2,13 @@ import { Employee } from "src/employees/entities";
 import { Entitie, Responsible } from "src/entity/entities";
 import { ColumnNumericTransformer } from "src/helper/column-numeric-Transformer";
 import { TransformStringToInteger } from "src/helper/transform-string-to-integer";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
+@Index(['ticketTempCorrelative'],{unique:true})
 export class TicketTemp {
-    @PrimaryGeneratedColumn('uuid')
-    ticketTempId:string;
-
-    @Column('text',{unique:true})
+ 
+    @PrimaryColumn('text')    
     ticketTempCorrelative:  string 
 
     @ManyToOne(()=>Entitie,entitie=>entitie.entityId)

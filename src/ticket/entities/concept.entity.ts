@@ -6,11 +6,24 @@ import { TypeConcept } from "./typeConcept.entity";
 export class Concept {
     @PrimaryGeneratedColumn('uuid')
     conceptId:string;
+
     @Index({ unique: true })
     @Column('text')
-    conceptCode:string;
+    conceptCodeSiaf:string;
+
+    @Index({ unique: true })
+    @Column('text')
+    conceptCodePlame:string;
+
+    @Column('text')
+    conceptGlosa:string;
+
     @Column('text')
     conceptDescription:string;
+
+    @Column('bool')
+    conceptIsDiscounted:boolean;
+
     @Column('bool')
     conceptIsCalculated:boolean;
     
