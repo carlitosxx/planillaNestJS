@@ -44,6 +44,7 @@ async findAll(paginationDto:PaginationDto){
     const query= await this.entityRepository.findAndCount({
       take:size,
       skip:calcSkip,
+      relations:['financing','budgetGoal'],
       order:{
         entityRuc:1
       }         
@@ -62,12 +63,14 @@ async findAll(paginationDto:PaginationDto){
 async findOne(term: string) {
   let entity:Entitie
   if(isUUID(term)){
-    entity=await this.entityRepository.findOneBy({entityId:term})
+    entity=await this.entityRepository.findOne({where:{entityId:term},relations:['financing','budgetGoal']})
   }else{      
-    const queryBuilder= this.entityRepository.createQueryBuilder();
+    const queryBuilder= this.entityRepository.createQueryBuilder('entity');
     entity=await queryBuilder
-      .where('"entityCode"=:entityCode or "entityName"=:entityName or"entityEmployer"=:entityEmployer',
-        {entityCode:term,entityName:term,entityEmployer:term}).getOne();
+    .leftJoinAndSelect('entity.financing','financing')
+    .leftJoinAndSelect('entity.budgetGoal','budgetGoal')
+    .where('"entityCode"=:entityCode or "entityName"=:entityName or"entityEmployer"=:entityEmployer or "entityRuc"=:entityRuc',
+        {entityCode:term,entityName:term,entityEmployer:term,entityRuc:term}).getOne();
   } 
   if(!entity)  throw new NotFoundException(`Entity with ${term} not found`)
   entity.entityLogo='/files/'+entity.entityLogo   

@@ -7,6 +7,7 @@ import { FilesModule } from './files/files.module';
 import { join } from 'path';
 import { EntityModule } from './entity/entity.module';
 import { AuthModule } from './auth/auth.module';
+import { TicketModule } from './ticket/ticket.module';
 import {ServeStaticModule}from '@nestjs/serve-static' 
 
 
@@ -30,7 +31,8 @@ import {ServeStaticModule}from '@nestjs/serve-static'
     CommonModule,
     FilesModule,
     EntityModule,
-    AuthModule
+    AuthModule,
+    TicketModule
   ],
 
 })

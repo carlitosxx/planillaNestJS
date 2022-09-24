@@ -1,4 +1,5 @@
 import { IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { Financing } from "../entities";
 
 export class CreateEntityDto {
     @IsString()
@@ -24,5 +25,8 @@ export class CreateEntityDto {
     @IsOptional()
     @IsString()
     entityLogo?:       string;
+
+    @IsString()
+    financing:Financing;
 
 }

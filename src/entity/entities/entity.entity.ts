@@ -1,5 +1,7 @@
 import { ColumnNumericTransformer } from 'src/helper/column-numeric-Transformer';
-import {Column, Entity, Index, PrimaryGeneratedColumn} from 'typeorm'
+import {Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from 'typeorm'
+import { BudgetGoal } from './budgetGoal.entity';
+import { Financing } from './financing.entity';
 @Entity()
 export class Entitie {
     @PrimaryGeneratedColumn('uuid')    
@@ -12,6 +14,7 @@ export class Entitie {
     @Column("text")
     entityName:          string;
 
+    @Index({ unique: true })
     @Column("text")
     entityCode:           string;
 
@@ -27,4 +30,12 @@ export class Entitie {
         transformer: new ColumnNumericTransformer(),
       })  
     entityStatus:          number;
+
+    @ManyToOne(()=>Financing,financing=>financing.financingId)
+    @JoinColumn({name:'financingId'})
+    financing:Financing;
+
+    @ManyToOne(()=>BudgetGoal,budgetGoal=>budgetGoal.budgetGoalId)
+    @JoinColumn({name:'budgetGoalId'})
+    budgetGoal:BudgetGoal;
 }

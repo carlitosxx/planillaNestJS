@@ -3,7 +3,6 @@ import { ConditionService } from '../services/condition.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateConditionDto } from '../dto/create-condition.dto';
 import { UpdateConditionDto } from '../dto/update-condition.dto';
-import { Auth } from 'src/auth/entities/auth.entity';
 import { ValidRoles } from 'src/auth/interfaces';
 import { Authorization } from 'src/auth/decorators';
 @Controller('condition')

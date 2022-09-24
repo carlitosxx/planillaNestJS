@@ -11,8 +11,8 @@ export class LaborRegimeController {
     constructor(private readonly laborRegimeService: LaborRegimeService) {}
     @Post()
     @Authorization(ValidRoles.user)
-    create(@Body() createConditionDto:CreateLaborRegimeDto){
-        return this.laborRegimeService.create(createConditionDto);
+    create(@Body() createLaborRegimeDto:CreateLaborRegimeDto){
+        return this.laborRegimeService.create(createLaborRegimeDto);
     }
     @Get()
     @Authorization(ValidRoles.user)
