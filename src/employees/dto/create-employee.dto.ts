@@ -11,8 +11,8 @@ export class CreateEmployeeDto {
     @IsString()
     employeeFullname:   string;
 
-    @IsNumber()
-    employeeStatus:     number;
+    // @IsNumber()
+    // employeeStatus:     number;
 
     @IsDateString()
     employeeEntryDate:  Date;

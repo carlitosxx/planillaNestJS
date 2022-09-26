@@ -19,11 +19,8 @@ export class Employee {
     employeeDni: string;
     @Column("text")
     employeeFullname: string;
-    @Column("numeric", {
-        precision: 7,
-        scale: 2,
-        transformer: new ColumnNumericTransformer(),
-      })    
+    @Column("numeric",{
+      default:1})    
     employeeStatus: number;
     @Column({type:"date",nullable:false})
     employeeEntryDate: Date;
