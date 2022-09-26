@@ -13,8 +13,7 @@ export class CorrelativeController {
     @Authorization(ValidRoles.user)
     create(@Body() createCorrelativeDto:CreateCorrelativeDto){
         return this.correlativeService.create(createCorrelativeDto);
-    }
-   
+    }   
     @Get()
     @Authorization(ValidRoles.user)
     findAll(@Query() correlativeParamDto:CorrelativeParamDto){

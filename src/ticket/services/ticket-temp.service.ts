@@ -16,18 +16,28 @@ export class TicketTempService {
         private readonly correlativeRepository:Repository<Correlative>
     ){}
     /**TODO: CREAR */
-    async create(createTicketTempDto:CreateTicketTempDto){      
-      // await this.correlativeRepository.findOne({
-      //   where:{
-      //       correlativeYear:correlativeYear,
-      //       correlativeSerie:correlativeSerie.toLowerCase()}
-      //   })
-      // createTicketTempDto.ticketTempCorrelative=       
+    async create(createTicketTempDto:CreateTicketTempDto){   
+      const currentTime = new Date();
+      const year:number = currentTime.getFullYear()
+      const correlative= await this.correlativeRepository.findOne({
+        where:{
+            correlativeYear:year,
+            correlativeSerie:"t"}
+        })
+      const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
+      createTicketTempDto.ticketTempCorrelative=
+      `${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
           const verify=await this.ticketTempRepository.findBy({ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative})
           if(verify.length!=0) throw new  BadRequestException(`Key ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) already exists.`) 
         try {           
             const data=this.ticketTempRepository.create(createTicketTempDto)
-            await this.ticketTempRepository.save(data);           
+            await this.ticketTempRepository.save(data);    
+            await this.correlativeRepository.update({ 
+              correlativeYear: year,
+              correlativeSerie:"t"},
+              {
+                correlativeNumber:correlative.correlativeNumber+1
+              })          
             return data;
         } catch (error) {
           console.log('error')
@@ -58,12 +68,7 @@ export class TicketTempService {
     /**TODO: BUSCAR POR: */
     async findOne(term: string) {
       
-        let data:TicketTemp
-        // if(isUUID(term)){
-        //     data=await this.ticketTempRepository.findOne({
-        //         where:{ticketTempId:term},
-        //         relations:['entity','responsible']})
-        // }else{      
+        let data:TicketTemp        
           console.log('pase por aqui');
           const queryBuilder= this.ticketTempRepository.createQueryBuilder('ticketTemp');
           data=await queryBuilder
@@ -75,8 +80,6 @@ export class TicketTempService {
         // } 
         if(!data)  throw new NotFoundException(`The search with ${term} not found`)
         return data
-    
-       
       }
 
     /**TODO: ACTUALIZAR */

@@ -26,6 +26,20 @@ export class EmployeesService {
   /**TODO: PAGINACION */
   async findAll(paginationDto:PaginationDto) {
     const {page=1,size=100}=paginationDto
+    const {employeeDni,employeeFullname}=paginationDto
+
+    if(employeeDni){
+      const query=await this.employeeRepository.createQueryBuilder('employees')
+      .where(`"employeeDni" LIKE :q`,{q: `%${employeeDni}%`}).getMany()
+      // console.log(query)
+      return query
+    }
+    if(employeeFullname){
+      const query=await this.employeeRepository.createQueryBuilder('employees')
+      .where(`"employeeFullname" LIKE :q`,{q: `%${employeeFullname}%`}).getMany()
+      // console.log(query)
+      return query
+    }
     const calcSkip=(page-1)*size
     const query= await this.employeeRepository.findAndCount({
       take:size,
@@ -33,7 +47,9 @@ export class EmployeesService {
       order:{
         employeeDni:1
       } ,
-      relations:['typeEmployee','organicUnit','condition','laborRegime','occupationalGroup','establishment','position','workday','salary','salary.employeeCategory','pensionAdministrator','pensionAdministrator.pensionSystem']
+      relations:['typeEmployee','organicUnit','condition','laborRegime',
+      'occupationalGroup','establishment','position','workday','salary',
+      'salary.employeeCategory','pensionAdministrator','pensionAdministrator.pensionSystem']
     })    
     return {
       total:query[1],

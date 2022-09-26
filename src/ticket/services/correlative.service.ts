@@ -41,9 +41,7 @@ export class CorrelativeService {
         return data       
       }
     /**TODO: ACTUALIZAR */
-    async update(correlativeSerie:string,correlativeYear:number, updateCorrelativeDto: UpdateCorrelativeDto) {      
-        console.log(correlativeSerie);
-        console.log(correlativeYear);
+    async update(correlativeSerie:string,correlativeYear:number, updateCorrelativeDto: UpdateCorrelativeDto) {           
         const data=await this.correlativeRepository.findOne({
             where:{
                 correlativeYear:correlativeYear,

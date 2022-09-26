@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsOptional, IsPositive, IsUUID, Min } from "class-validator";
+import { IsOptional, IsPositive, IsString, IsUUID, Min } from "class-validator";
 import { min } from "rxjs";
 
 export class PaginationDto{
@@ -16,6 +16,14 @@ export class PaginationDto{
     @IsOptional()
     @IsUUID()
     employeeCategoryId?:string;
+
+    @IsOptional()
+    @IsString()
+    employeeDni:string
+
+    @IsOptional()
+    @IsString()
+    employeeFullname:string
 
     @IsOptional()
     @IsUUID()
