@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {validate as isUUID}  from 'uuid';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { TicketTemp } from '../entities';
+import { Correlative, TicketTemp } from '../entities';
 import { CreateTicketTempDto, UpdateTicketTempDto } from '../dto';
 
 @Injectable()
@@ -11,10 +11,18 @@ export class TicketTempService {
     private readonly logger=new Logger('TicketTempService')
     constructor(
         @InjectRepository(TicketTemp)
-        private readonly ticketTempRepository:Repository<TicketTemp>
+        private readonly ticketTempRepository:Repository<TicketTemp>,
+        @InjectRepository(Correlative)
+        private readonly correlativeRepository:Repository<Correlative>
     ){}
     /**TODO: CREAR */
-    async create(createTicketTempDto:CreateTicketTempDto){       
+    async create(createTicketTempDto:CreateTicketTempDto){      
+      // await this.correlativeRepository.findOne({
+      //   where:{
+      //       correlativeYear:correlativeYear,
+      //       correlativeSerie:correlativeSerie.toLowerCase()}
+      //   })
+      // createTicketTempDto.ticketTempCorrelative=       
           const verify=await this.ticketTempRepository.findBy({ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative})
           if(verify.length!=0) throw new  BadRequestException(`Key ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) already exists.`) 
         try {           

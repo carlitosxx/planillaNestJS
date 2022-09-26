@@ -28,21 +28,15 @@ export class TicketTemp {
         default: () =>'NOW()'})  
     ticketTempCreatedAt: Date;
 
-    @Column('numeric', {
-        precision: 10,
-        scale: 0,
-        transformer: new ColumnNumericTransformer(),
-    })
+    @Column('numeric',{
+        default:1})
     ticketTempStatus:   number;
 
     @Column('text')
     ticketTempObservacion:string;
 
-    @Column('numeric', {
-        precision: 10,
-        scale: 2,
-        transformer: new ColumnNumericTransformer(),
-    })
+    @Column('numeric',{
+        default:0})
     ticketTempNetAmount:number;
    
     @Column('numeric', {     

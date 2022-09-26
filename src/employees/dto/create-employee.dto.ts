@@ -1,5 +1,5 @@
 import { IsDate, IsDateString, IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
-import { TypeEmployee,OrganicUnit, Condition, Salary } from "../entities";
+import { TypeEmployee,OrganicUnit, Condition, Salary, PensionAdministrator, Workday, Position, Establishment, OccupationalGroup, LaborRegime } from "../entities";
 
 
 export class CreateEmployeeDto {
@@ -34,4 +34,22 @@ export class CreateEmployeeDto {
 
     @IsString()
     salary:             Salary
+
+    @IsString()
+    pensionAdministrator: PensionAdministrator
+
+    @IsString()
+    workday:Workday
+
+    @IsString()
+    position:Position
+
+    @IsString()
+    establishment:Establishment
+
+    @IsString()
+    occupationalGroup:OccupationalGroup
+
+    @IsString()
+    laborRegime:LaborRegime
 }

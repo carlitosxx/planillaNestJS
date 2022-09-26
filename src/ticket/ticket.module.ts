@@ -16,14 +16,17 @@ import { TicketTempService } from './services/ticket-temp.service';
 import { TicketDetailTempService } from './services/ticket-detail-temp.service';
 import { TicketDetailTemp } from './entities/ticketDetailTemp.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { Correlative } from './entities/correlative.entity';
+import { CorrelativeService } from './services/correlative.service';
+import { CorrelativeController } from './controllers/correlative.controller';
 
 
 @Module({
-  controllers: [TicketController, TypeConceptController, ConceptController, TicketTempController, TicketDetailTempController],
-  providers: [TicketService, ConceptService, TypeConceptService, TicketTempService, TicketDetailTempService],
+  controllers: [TicketController, TypeConceptController, ConceptController, TicketTempController, TicketDetailTempController, CorrelativeController],
+  providers: [TicketService, ConceptService, TypeConceptService, TicketTempService, TicketDetailTempService, CorrelativeService],
   imports:[
     AuthModule,    
-    TypeOrmModule.forFeature([Ticket,TicketTemp,TicketDetailTemp,TypeConcept,Concept])
+    TypeOrmModule.forFeature([Ticket,TicketTemp,TicketDetailTemp,TypeConcept,Concept,Correlative])
   ]
 })
 export class TicketModule {}

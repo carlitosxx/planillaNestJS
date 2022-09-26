@@ -2,7 +2,8 @@ import { IsBoolean, IsDateString, IsNumber, IsOptional, IsString, MaxLength } fr
 import { Employee } from "src/employees/entities";
 import { Entitie, Responsible } from "src/entity/entities";
 
-export class CreateTicketTempDto{  
+export class CreateTicketTempDto{ 
+    @IsOptional() 
     @IsString()    
     ticketTempCorrelative:string;
     @IsString()
@@ -11,12 +12,12 @@ export class CreateTicketTempDto{
     employee:Employee;    
     @IsString()
     responsible:Responsible;   
-    @IsNumber()
-    ticketTempStatus:number;
+    // @IsNumber()
+    // ticketTempStatus:number;
     @IsString()
     ticketTempObservacion:string;
-    @IsNumber()
-    ticketTempNetAmount:number;
+    // @IsNumber()
+    // ticketTempNetAmount:number;
     @IsNumber()
     ticketTempDaysWorked:number;
     @IsNumber()
