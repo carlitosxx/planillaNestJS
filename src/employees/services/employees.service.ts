@@ -16,6 +16,7 @@ export class EmployeesService {
   /**TODO: CREAR */
   async create(createEmployeeDto: CreateEmployeeDto) {
     try { 
+      createEmployeeDto.employeeFullname=createEmployeeDto.employeeFullname.toLowerCase();
       const employee=this.employeeRepository.create(createEmployeeDto)
       await this.employeeRepository.save(employee);
       return employee;
@@ -36,7 +37,7 @@ export class EmployeesService {
     }
     if(employeeFullname){
       const query=await this.employeeRepository.createQueryBuilder('employees')
-      .where(`"employeeFullname" LIKE :q`,{q: `%${employeeFullname}%`}).getMany()
+      .where(`"employeeFullname" LIKE :q`,{q: `%${employeeFullname.toLowerCase()}%`}).getMany()
       // console.log(query)
       return query
     }
