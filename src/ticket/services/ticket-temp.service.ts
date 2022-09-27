@@ -76,18 +76,15 @@ export class TicketTempService {
         }
     }
     /**TODO: BUSCAR POR: */
-    async findOne(term: string) {
-      
-        let data:TicketTemp        
-          console.log('pase por aqui');
+    async findOne(term: string) {      
+        let data:TicketTemp                 
           const queryBuilder= this.ticketTempRepository.createQueryBuilder('ticketTemp');
           data=await queryBuilder
-            // .leftJoinAndSelect('ticketTemp.employee','employee')
-            // .leftJoinAndSelect('ticketTemp.entity','entity')
-            // .leftJoinAndSelect('ticketTemp.responsible','responsible')
+            .leftJoinAndSelect('ticketTemp.employee','employee')
+            .leftJoinAndSelect('ticketTemp.entity','entity')
+            .leftJoinAndSelect('ticketTemp.responsible','responsible')
             .where('"ticketTempCorrelative"=:ticketTempCorrelative',
-              {ticketTempCorrelative:term}).getOne();
-        // } 
+              {ticketTempCorrelative:term}).getOne();        
         if(!data)  throw new NotFoundException(`The search with ${term} not found`)
         return data
       }
