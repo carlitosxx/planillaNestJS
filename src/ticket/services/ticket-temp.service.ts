@@ -19,16 +19,26 @@ export class TicketTempService {
     async create(createTicketTempDto:CreateTicketTempDto){   
       const currentTime = new Date();
       const year:number = currentTime.getFullYear()
+      const verifyMonthYear=await this.ticketTempRepository.findOne({
+        where:{
+          ticketTempMonth:createTicketTempDto.ticketTempMonth,
+          ticketTempYear:createTicketTempDto.ticketTempYear
+        }
+      })
+      // console.log(verifyMonthYear)
+      if(verifyMonthYear) throw new BadRequestException('The employee has a ticket in this Date')
       const correlative= await this.correlativeRepository.findOne({
         where:{
             correlativeYear:year,
             correlativeSerie:"t"}
         })
+      if(!correlative) throw new NotFoundException(`correlative with serie: t and year:${year} not found`) 
+
       const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
       createTicketTempDto.ticketTempCorrelative=
       `${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
-          const verify=await this.ticketTempRepository.findBy({ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative})
-          if(verify.length!=0) throw new  BadRequestException(`Key ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) already exists.`) 
+          const verifyTicket=await this.ticketTempRepository.findBy({ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative})
+          if(verifyTicket.length!=0) throw new  BadRequestException(`Key ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) already exists.`) 
         try {           
             const data=this.ticketTempRepository.create(createTicketTempDto)
             await this.ticketTempRepository.save(data);    

@@ -3,6 +3,12 @@ import { Employee } from "src/employees/entities";
 import { Entitie, Responsible } from "src/entity/entities";
 
 export class CreateTicketTempDto{ 
+    @IsNumber()   
+    ticketTempYear:number;
+
+    @IsNumber()   
+    ticketTempMonth:number;
+
     @IsOptional() 
     @IsString()    
     ticketTempCorrelative:string;

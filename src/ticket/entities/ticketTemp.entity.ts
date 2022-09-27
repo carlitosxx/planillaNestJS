@@ -7,6 +7,15 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGen
 @Entity()
 @Index(['ticketTempCorrelative'],{unique:true})
 export class TicketTemp {
+    @Column('numeric', {     
+        transformer: new TransformStringToInteger(),
+    })
+    ticketTempYear:number
+
+    @Column('numeric', {     
+        transformer: new TransformStringToInteger(),
+    })
+    ticketTempMonth:number
  
     @PrimaryColumn('text')    
     ticketTempCorrelative:  string 
