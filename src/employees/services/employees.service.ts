@@ -47,7 +47,7 @@ export class EmployeesService {
       skip:calcSkip,
       order:{
         employeeDni:1
-      } ,
+      },
       relations:['typeEmployee','organicUnit','condition','laborRegime',
       'occupationalGroup','establishment','position','workday','salary',
       'salary.employeeCategory','pensionAdministrator','pensionAdministrator.pensionSystem']

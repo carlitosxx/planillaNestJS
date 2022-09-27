@@ -2,8 +2,8 @@ import { IsNumber, IsString, IsUUID, MaxLength, MinLength } from "class-validato
 
 export class CreateTicketDetailTempDto{
     @IsString()
-    @MaxLength(12) //B2022-000001
-    @MinLength(12)
+    @MaxLength(11) //B2022-00001
+    @MinLength(11)
     ticketTempCorrelative:string;
 
     @IsString()

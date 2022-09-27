@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {validate as isUUID}  from 'uuid';
@@ -15,7 +15,17 @@ export class TicketDetailTempService {
     ){}
     /**TODO: CREAR */
     async create(createTicketDetailTempDto:CreateTicketDetailTempDto){
-        try {
+        const repeated = await this.ticketDetailTempRepository.findOne({
+          where:{
+            conceptId:createTicketDetailTempDto.conceptId,
+            ticketTempCorrelative:createTicketDetailTempDto.ticketTempCorrelative
+          }
+        })
+        if(repeated) 
+        throw new BadRequestException(
+        `Key (\"conceptId\")=(${createTicketDetailTempDto.conceptId}) `+
+        `and (\"ticketTempCorrelative\")=(${createTicketDetailTempDto.ticketTempCorrelative}) already exists.`)
+        try {                      
             const data=this.ticketDetailTempRepository.create(createTicketDetailTempDto)
             await this.ticketDetailTempRepository.save(data);
             return data;
