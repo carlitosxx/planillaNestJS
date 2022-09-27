@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {validate as isUUID}  from 'uuid';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { Correlative, TicketTemp } from '../entities';
+import { Correlative, TicketDetailTemp, TicketTemp } from '../entities';
 import { CreateTicketTempDto, UpdateTicketTempDto } from '../dto';
 
 @Injectable()
@@ -13,7 +13,9 @@ export class TicketTempService {
         @InjectRepository(TicketTemp)
         private readonly ticketTempRepository:Repository<TicketTemp>,
         @InjectRepository(Correlative)
-        private readonly correlativeRepository:Repository<Correlative>
+        private readonly correlativeRepository:Repository<Correlative>,
+        @InjectRepository(TicketDetailTemp)
+        private readonly ticketDetailTempRepository:Repository<TicketDetailTemp>,
     ){}
     /**TODO: CREAR */
     async create(createTicketTempDto:CreateTicketTempDto){   
@@ -64,15 +66,24 @@ export class TicketTempService {
           relations:[
             'entity','responsible','employee','employee.typeEmployee',
             'employee.organicUnit','employee.condition','employee.laborRegime','employee.occupationalGroup',
-            'employee.establishment','employee.position','employee.workday','employee.salary','employee.salary.employeeCategory','employee.pensionAdministrator','employee.pensionAdministrator.pensionSystem'],
+            'employee.establishment','employee.position','employee.workday','employee.salary',
+            'employee.salary.employeeCategory','employee.pensionAdministrator','employee.pensionAdministrator.pensionSystem'],
           order:{
             ticketTempCorrelative:1
           }         
-        }
-        )    
+        })        
+        const data= await Promise.all(query[0].map(async (element:any)=> {
+          const arrayConcepts=  await this.ticketDetailTempRepository.find({
+              where:{
+                ticketTempCorrelative:element.ticketTempCorrelative
+              }
+            })            
+            element.concepts=arrayConcepts;            
+            return element
+          })) 
         return {
           total:query[1],
-          data:query[0]
+          data
         }
     }
     /**TODO: BUSCAR POR: */
@@ -85,8 +96,15 @@ export class TicketTempService {
             .leftJoinAndSelect('ticketTemp.responsible','responsible')
             .where('"ticketTempCorrelative"=:ticketTempCorrelative',
               {ticketTempCorrelative:term}).getOne();        
-        if(!data)  throw new NotFoundException(`The search with ${term} not found`)
-        return data
+        if(!data)  throw new NotFoundException(`The search with ${term} not found`)    
+        const arrayConcepts=  await this.ticketDetailTempRepository.find({
+                where:{
+                  ticketTempCorrelative:data.ticketTempCorrelative
+                }
+              })    
+        const newData:any=data;
+        newData.concetps=arrayConcepts
+        return newData
       }
 
     /**TODO: ACTUALIZAR */
