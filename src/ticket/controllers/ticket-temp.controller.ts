@@ -4,6 +4,7 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateTicketTempDto,UpdateTicketTempDto } from '../dto';
 import { ValidRoles } from 'src/auth/interfaces';
 import { Authorization } from 'src/auth/decorators';
+import { CreateBatchTicketTemp } from '../dto/create-batch-ticket-temp.dto';
 
 @Controller('ticket-temp')
 export class TicketTempController {
@@ -12,6 +13,11 @@ export class TicketTempController {
     @Authorization(ValidRoles.user)
     create(@Body() createTicketTempDto:CreateTicketTempDto){
         return this.ticketTempService.create(createTicketTempDto);
+    }
+    @Post('batch')
+    @Authorization(ValidRoles.user)
+    createBatch(@Body() createBatchTicketTemp:CreateBatchTicketTemp){
+        return this.ticketTempService.createBatch(createBatchTicketTemp);
     }
     @Get()
     @Authorization(ValidRoles.user)

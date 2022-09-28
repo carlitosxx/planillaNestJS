@@ -38,6 +38,7 @@ export class TicketTemp {
     ticketTempCreatedAt: Date;
 
     @Column('numeric',{
+        transformer: new TransformStringToInteger(),
         default:1})
     ticketTempStatus:   number;
 
@@ -45,6 +46,7 @@ export class TicketTemp {
     ticketTempObservacion:string;
 
     @Column('numeric',{
+        transformer: new TransformStringToInteger(),
         default:0})
     ticketTempNetAmount:number;
    
