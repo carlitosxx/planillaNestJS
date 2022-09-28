@@ -102,7 +102,7 @@ export class TicketTempService {
         })
         if(!correlative) throw new NotFoundException(`correlative with serie: t and year:${createBatchTicketTemp.ticketTempYear} not found`)      
         const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
-         newTicket.ticketTempCorrelative=`${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
+        newTicket.ticketTempCorrelative=`${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
         const verifyTicket=await this.ticketTempRepository.findBy({ticketTempCorrelative:newTicket.ticketTempCorrelative})
         if(verifyTicket.length!=0) throw new  BadRequestException(`Key ("ticketTempCorrelative")=(${newTicket.ticketTempCorrelative}) already exists.`)
           try {          
@@ -114,54 +114,13 @@ export class TicketTempService {
                 correlativeSerie:"t"},
                 {
                   correlativeNumber:correlative.correlativeNumber+1
-                })          
-              
+                })  
           } catch (error) {
             console.log('error')
               this.handleDBExceptions(error);
           }
         }
-        return 'se agrego';  
-      // await Promise.all(createBatchTicketTemp.employees.map(async(element)=>{
-      //   let verifyMonthYear: TicketTemp;  
-      //   try {
-      //     // VERIFICAR SI EXISTE UNA BOLETA EN ESE MES Y AÑO
-      //     verifyMonthYear=await this.ticketTempRepository.findOne({
-      //       where:{  
-      //         employee:{employeeId:element},          
-      //         ticketTempMonth:createBatchTicketTemp.ticketTempMonth,
-      //         ticketTempYear:createBatchTicketTemp.ticketTempYear,          
-      //       }
-      //     })                   
-      //   } catch (error) {       
-      //     this.handleDBExceptions(error);
-      //   }
-      //   if(verifyMonthYear) throw new BadRequestException('The employee has a ticket in this Date')  
-      //   //OBTENER EL CORRELATIVO
-      //   const correlative= await this.correlativeRepository.findOne({
-      //   where:{
-      //       correlativeYear:createBatchTicketTemp.ticketTempYear,
-      //       correlativeSerie:"t"}
-      //   })
-      //   if(!correlative) throw new NotFoundException(`correlative with serie: t and year:${createBatchTicketTemp.ticketTempYear} not found`)      
-      //   const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
-
-      //   // let ticketTemp= new CreateTicketTempDto();   
-      //   // let employee=new Employee();
-      //   // employee.employeeId=element;
-      //   // ticketTemp.entity=createBatchTicketTemp.entity,        
-      //   // ticketTemp.employee=employee;
-      //   // ticketTemp.responsible=createBatchTicketTemp.responsible;
-      //   // ticketTemp.ticketTempDaysWorked=30;
-      //   // ticketTemp.ticketTempDaysNotWorked=0;
-      //   // ticketTemp.ticketTempDaysSubsidized=0;
-      //   // ticketTemp.ticketTempMonth=createBatchTicketTemp.ticketTempMonth;
-      //   // ticketTemp.ticketTempYear=createBatchTicketTemp.ticketTempYear;
-      //   // ticketTemp.ticketTempObservacion="";
-      //   // console.log('PASE POR AQUI ==============================')
-      //   // await this.create(ticketTemp)
-      // })      
-      // )
+        return 'se agrego'; 
     }
     /**TODO: PAGINACION */
     async findAll(paginationDto:PaginationDto){
@@ -192,6 +151,19 @@ export class TicketTempService {
           total:query[1],
           data
         }
+    }
+    async findByYearMonth(ticketTempYear,ticketTempMonth){
+     const data=await this.ticketTempRepository.find({
+          where:{ticketTempMonth:1,ticketTempYear:2024},
+          relations:['employee'],
+           select:{
+            ticketTempCorrelative:true, 
+            employee:{employeeDni:true,employeeFullname:true}           
+            // employee.employeeFullname:true
+           }
+
+      })
+      return data;
     }
     /**TODO: BUSCAR POR: */
     async findOne(term: string) {      

@@ -18,7 +18,8 @@ export class ConceptController {
     @Authorization(ValidRoles.user)
     findAll(@Query() paginationDto:PaginationDto){
         return this.conceptService.findAll(paginationDto);
-    }
+    }   
+
     @Get(':term')
     @Authorization(ValidRoles.user)
     findOne(@Param('term') term: string) {

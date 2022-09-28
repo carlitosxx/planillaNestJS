@@ -5,6 +5,7 @@ import { CreateTicketTempDto,UpdateTicketTempDto } from '../dto';
 import { ValidRoles } from 'src/auth/interfaces';
 import { Authorization } from 'src/auth/decorators';
 import { CreateBatchTicketTemp } from '../dto/create-batch-ticket-temp.dto';
+import { query } from 'express';
 
 @Controller('ticket-temp')
 export class TicketTempController {
@@ -24,6 +25,12 @@ export class TicketTempController {
     findAll(@Query() paginationDto:PaginationDto){
         return this.ticketTempService.findAll(paginationDto);
     }
+    @Get('by-year-month')
+    @Authorization(ValidRoles.user)
+    findByYearMonth(@Query('year') year,@Query('month') month){
+        return this.ticketTempService.findByYearMonth(year,month)
+    }
+
     @Get(':term')
     @Authorization(ValidRoles.user)
     findOne(@Param('term') term: string) {
