@@ -153,16 +153,16 @@ export class TicketTempService {
         }
     }
     async findByYearMonth(ticketTempYear,ticketTempMonth){
+      console.log(ticketTempYear,ticketTempMonth)
      const data=await this.ticketTempRepository.find({
-          where:{ticketTempMonth:1,ticketTempYear:2024},
+          where:{ticketTempMonth:parseInt(ticketTempMonth),ticketTempYear:parseInt(ticketTempYear)},
           relations:['employee'],
            select:{
             ticketTempCorrelative:true, 
-            employee:{employeeDni:true,employeeFullname:true}           
-            // employee.employeeFullname:true
+            employee:{employeeDni:true,employeeFullname:true}            
            }
-
       })
+      
       return data;
     }
     /**TODO: BUSCAR POR: */
