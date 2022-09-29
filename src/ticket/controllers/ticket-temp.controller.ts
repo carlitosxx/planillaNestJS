@@ -6,6 +6,7 @@ import { ValidRoles } from 'src/auth/interfaces';
 import { Authorization } from 'src/auth/decorators';
 import { CreateBatchTicketTemp } from '../dto/create-batch-ticket-temp.dto';
 import { query } from 'express';
+import { UpdateArrayOfDayWorkedDelay } from '../dto/Update-array-of-day-worked-delay.dto';
 
 @Controller('ticket-temp')
 export class TicketTempController {
@@ -20,6 +21,13 @@ export class TicketTempController {
     createBatch(@Body() createBatchTicketTemp:CreateBatchTicketTemp){
         return this.ticketTempService.createBatch(createBatchTicketTemp);
     }
+    @Post('update-days-worked-delay')
+    @Authorization(ValidRoles.user)
+    updateDaysWorkedDelay(@Body() updateArrayOfDayWorkedDelay:UpdateArrayOfDayWorkedDelay){
+        return this.ticketTempService.updateDaysWorkedDelay(updateArrayOfDayWorkedDelay)
+    }
+
+
     @Get()
     @Authorization(ValidRoles.user)
     findAll(@Query() paginationDto:PaginationDto){
@@ -43,6 +51,7 @@ export class TicketTempController {
       @Body() updateConceptDto: UpdateTicketTempDto) {
       return this.ticketTempService.update(id, updateConceptDto);
     }
+
     @Delete(':id')
     @Authorization(ValidRoles.admin)
     remove(@Param('id',ParseUUIDPipe) id: string) {

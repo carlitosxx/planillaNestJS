@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {validate as isUUID}  from 'uuid';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { Correlative, TicketDetailTemp, TicketTemp } from '../entities';
+import { Concept, Correlative, TicketDetailTemp, TicketTemp } from '../entities';
 import { CreateTicketTempDto, UpdateTicketTempDto } from '../dto';
 import { CreateBatchTicketTemp } from '../dto/create-batch-ticket-temp.dto';
 import { Employee } from 'src/employees/entities';
 import { Entitie } from 'src/entity/entities';
+import { UpdateArrayOfDayWorkedDelay } from '../dto/Update-array-of-day-worked-delay.dto';
 
 @Injectable()
 export class TicketTempService {
@@ -19,6 +20,8 @@ export class TicketTempService {
         private readonly correlativeRepository:Repository<Correlative>,
         @InjectRepository(TicketDetailTemp)
         private readonly ticketDetailTempRepository:Repository<TicketDetailTemp>,
+        @InjectRepository(Concept)
+        private readonly conceptRepository:Repository<Concept>,
     ){}
     /**TODO: CREAR */
     async create(createTicketTempDto:CreateTicketTempDto){        
@@ -71,8 +74,7 @@ export class TicketTempService {
         let newTicket=new CreateTicketTempDto();
         let employee=new Employee();
         employee.employeeId=element;
-        newTicket.employee=employee;
-        // newTicket.employee=element;
+        newTicket.employee=employee;        
         newTicket.entity=createBatchTicketTemp.entity;
         newTicket.responsible=createBatchTicketTemp.responsible;
         newTicket.ticketTempDaysWorked=30;
@@ -105,8 +107,7 @@ export class TicketTempService {
         newTicket.ticketTempCorrelative=`${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
         const verifyTicket=await this.ticketTempRepository.findBy({ticketTempCorrelative:newTicket.ticketTempCorrelative})
         if(verifyTicket.length!=0) throw new  BadRequestException(`Key ("ticketTempCorrelative")=(${newTicket.ticketTempCorrelative}) already exists.`)
-          try {          
-          console.log(newTicket);
+          try {   
               const data=this.ticketTempRepository.create(newTicket)
               await this.ticketTempRepository.save(data);    
               await this.correlativeRepository.update({ 
@@ -121,6 +122,69 @@ export class TicketTempService {
           }
         }
         return 'se agrego'; 
+    }
+
+    /**TODO: UPDATE DAYS WORKED,concept REMUNERATION AND DELAY */
+    async updateDaysWorkedDelay(updateArrayOfDayWorkedDelay:UpdateArrayOfDayWorkedDelay){      
+      const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})
+      const conceptDelayId=concepDelay.conceptId
+      const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
+      const conceptRemunerationId=conceptRemuneration.conceptId;
+
+      for (const element of updateArrayOfDayWorkedDelay.ticketData){
+        console.log(element);
+        let empleado= await this.ticketTempRepository.findOne({
+          where:{ticketTempCorrelative:element.ticketTempCorrelative},
+          relations:['employee','employee.salary','employee.workday']          
+        })        
+        if(element.ticketTempDateStartVacation && element.ticketTempDateEndVacation){
+          const queryDaysWorked= await this.ticketTempRepository.update(
+            {
+            ticketTempCorrelative:element.ticketTempCorrelative
+            },
+            {
+            ticketTempDaysWorked:element.ticketTempDaysWorked,
+            ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
+            ticketTempDaysSubsidized:element.ticketTempDaysSubsidized,
+            ticketTempDateStartVacation:element.ticketTempDateStartVacation,
+            ticketTempDateEndVacation:element.ticketTempDateEndVacation
+            })   
+        }else{
+          const queryDaysWorked= await this.ticketTempRepository.update(
+            {
+            ticketTempCorrelative:element.ticketTempCorrelative
+            },
+            {
+            ticketTempDaysWorked:element.ticketTempDaysWorked,
+            ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
+            ticketTempDaysSubsidized:element.ticketTempDaysSubsidized, 
+            }) 
+        } 
+        try {
+          const amountRemuneration=(empleado.employee.salary.salarySalary-(empleado.employee.salary.salarySalary/30)*element.ticketTempDaysNotWorked)
+          const queryRemuneration= this.ticketDetailTempRepository.create({
+            ticketTempCorrelative:element.ticketTempCorrelative,
+            conceptId:conceptRemunerationId,
+            ticketDetailTempAmount:amountRemuneration
+          })
+          await this.ticketDetailTempRepository.save(queryRemuneration)     
+          const amountDelayDays=(empleado.employee.salary.salarySalary/30)*element.delayDays
+          const amountDelayHours=((empleado.employee.salary.salarySalary/30)/empleado.employee.workday.workdayHoursDay)*element.delayHours
+          const amountDelayMinutes=(((empleado.employee.salary.salarySalary/30)/empleado.employee.workday.workdayHoursDay)/60)*element.delayMinutes
+          const totalAmountDelay=amountDelayDays+amountDelayHours+amountDelayMinutes
+          const queryDelay=  this.ticketDetailTempRepository.create({
+            ticketTempCorrelative:element.ticketTempCorrelative,
+            conceptId:conceptDelayId,
+            ticketDetailTempAmount:totalAmountDelay
+          })  
+          await this.ticketDetailTempRepository.save(queryDelay)       
+        } catch (error) {
+          console.log('error')
+          this.handleDBExceptions(error);
+        }    
+      }
+      return 'hecho'
+
     }
     /**TODO: PAGINACION */
     async findAll(paginationDto:PaginationDto){
@@ -152,17 +216,16 @@ export class TicketTempService {
           data
         }
     }
-    async findByYearMonth(ticketTempYear,ticketTempMonth){
-      console.log(ticketTempYear,ticketTempMonth)
+    /**TODO: BUSCAR POR AÑO Y MES */
+    async findByYearMonth(ticketTempYear:number,ticketTempMonth:number){     
      const data=await this.ticketTempRepository.find({
-          where:{ticketTempMonth:parseInt(ticketTempMonth),ticketTempYear:parseInt(ticketTempYear)},
+          where:{ticketTempMonth:ticketTempMonth,ticketTempYear:ticketTempYear},
           relations:['employee'],
            select:{
             ticketTempCorrelative:true, 
             employee:{employeeDni:true,employeeFullname:true}            
            }
-      })
-      
+      })      
       return data;
     }
     /**TODO: BUSCAR POR: */

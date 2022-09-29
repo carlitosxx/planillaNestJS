@@ -26,6 +26,9 @@ export class Concept {
 
     @Column('bool')
     conceptIsCalculated:boolean;
+
+    @Column({ type: 'numeric', nullable: true})
+    conceptCode:number
     
     @ManyToOne(()=>TypeConcept,typeConcept=>typeConcept.typeConceptId)
     @JoinColumn({name:'typeConceptId'})
