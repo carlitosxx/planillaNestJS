@@ -21,6 +21,7 @@ export class CreateTicketTempDto{
 
     @IsString()
     responsible:Responsible; 
+
     @IsString()
     ticketTempObservacion:string;
   
@@ -40,4 +41,14 @@ export class CreateTicketTempDto{
     @IsOptional()
     @IsDateString()
     ticketTempDateEndVacation?:Date;
+
+    @IsNumber()
+    ticketTempDelayDays:number;
+
+    @IsNumber()
+    ticketTempDelayHours:number;
+    
+    @IsNumber()
+    ticketTempDelayMinutes:number;
+
 }

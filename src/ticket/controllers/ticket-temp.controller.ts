@@ -26,7 +26,6 @@ export class TicketTempController {
         return this.ticketTempService.updateDaysWorkedDelay(updateArrayOfDayWorkedDelay)
     }
 
-
     @Get()
     @Authorization(ValidRoles.user)
     findAll(@Query() paginationDto:PaginationDto){

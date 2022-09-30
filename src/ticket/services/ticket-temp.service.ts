@@ -37,20 +37,20 @@ export class TicketTempService {
       } catch (error) {       
         this.handleDBExceptions(error);
       }            
-      if(verifyMonthYear) throw new BadRequestException('The employee has a ticket in this Date')
-      //OBTENER EL CORRELATIVO
+      if(verifyMonthYear) throw new BadRequestException('El empleado tiene una boleta en esta fecha')
+      //OBTENER EL ULTIMO NUMERO DEL CORRELATIVO
       const correlative= await this.correlativeRepository.findOne({
         where:{
             correlativeYear:createTicketTempDto.ticketTempYear,
             correlativeSerie:"t"}
         })
-      if(!correlative) throw new NotFoundException(`correlative with serie: t and year:${createTicketTempDto.ticketTempYear} not found`)      
+      if(!correlative) throw new NotFoundException(`Numero de correlativo con serie: T y año:${createTicketTempDto.ticketTempYear} no fue encontrado`)      
       const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
       //ARMAR EL CORRELATIVO CON AÑO Y SERIE
       createTicketTempDto.ticketTempCorrelative=`${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
       const verifyTicket=await this.ticketTempRepository.findBy({ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative})
       if(verifyTicket.length!=0) throw new  BadRequestException(
-      `Key ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) already exists.`) 
+      `La llave ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) actualmente existe.`) 
         try {           
             const data=this.ticketTempRepository.create(createTicketTempDto)
             await this.ticketTempRepository.save(data);    
@@ -79,6 +79,9 @@ export class TicketTempService {
         newTicket.ticketTempDaysWorked=30;
         newTicket.ticketTempDaysNotWorked=0;
         newTicket.ticketTempDaysSubsidized=0;
+        newTicket.ticketTempDelayDays=0;
+        newTicket.ticketTempDelayHours=0;
+        newTicket.ticketTempDelayMinutes=0;
         newTicket.ticketTempMonth=createBatchTicketTemp.ticketTempMonth;
         newTicket.ticketTempYear=createBatchTicketTemp.ticketTempYear;
         newTicket.ticketTempObservacion="ninguna";
@@ -123,7 +126,7 @@ export class TicketTempService {
         return 'se agrego'; 
     }
 
-    /**TODO: UPDATE DAYS WORKED,concept REMUNERATION AND DELAY */
+    /**TODO: ACTUALIZAR BOLETA Y AGREGAR CONCEPTOS DE REMUNERACION Y TARDANZA */
     async updateDaysWorkedDelay(updateArrayOfDayWorkedDelay:UpdateArrayOfDayWorkedDelay){  
       //BUSCAMOS EL ID DEL CONCEPTO DE TARDANZA POR EL CODIGO """1"""    
       const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})

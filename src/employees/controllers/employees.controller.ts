@@ -22,13 +22,7 @@ export class EmployeesController {
     return this.employeesService.findAll(paginationDto);
   }
 
-  // @Get('employee-custom')
-  // @Authorization(ValidRoles.user)
-  // findAllActive(@Query() withStatus:string){
-  //   return this.employeesService.findAllActive(withStatus);
-  // }
-
-  @Get(':term')
+   @Get(':term')
   @Authorization(ValidRoles.user)
   findOne(@Param('term') term: string) {
     return this.employeesService.findOne(term);

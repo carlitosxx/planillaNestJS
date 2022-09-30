@@ -69,4 +69,19 @@ export class TicketTemp {
     
     @Column('date',{nullable:true})
     ticketTempDateEndVacation:Date;
+
+    @Column('numeric', {   nullable:true,   
+        transformer: new TransformStringToInteger(),
+    })   
+    ticketTempDelayDays:number;
+
+    @Column('numeric', {    nullable:true,  
+        transformer: new TransformStringToInteger(),
+    })   
+    ticketTempDelayHours:number;
+    
+    @Column('numeric', { nullable:true,    
+        transformer: new TransformStringToInteger(),        
+    })   
+    ticketTempDelayMinutes:number;
 }
