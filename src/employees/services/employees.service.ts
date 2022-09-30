@@ -27,19 +27,35 @@ export class EmployeesService {
   /**TODO: PAGINACION */
   async findAll(paginationDto:PaginationDto) {
     const {page=1,size=100}=paginationDto
-    const {employeeDni,employeeFullname}=paginationDto
-
+    const {employeeDni,employeeFullname,withStatus}=paginationDto    
     if(employeeDni){
       const query=await this.employeeRepository.createQueryBuilder('employees')
-      .where(`"employeeDni" LIKE :q`,{q: `%${employeeDni}%`}).getMany()
-      // console.log(query)
+      .where(`"employeeDni" LIKE :q`,{q: `%${employeeDni}%`}).getMany()      
       return query
     }
     if(employeeFullname){
       const query=await this.employeeRepository.createQueryBuilder('employees')
-      .where(`"employeeFullname" LIKE :q`,{q: `%${employeeFullname.toLowerCase()}%`}).getMany()
-      // console.log(query)
+      .where(`"employeeFullname" LIKE :q`,{q: `%${employeeFullname.toLowerCase()}%`}).getMany()      
       return query
+    }
+    if(withStatus){
+      const query= await this.employeeRepository.findAndCount({      
+        select:{
+          employeeId:true,
+          employeeFullname:true,
+          typeEmployee:{typeEmployeeDescription:true}
+  
+        },
+        order:{
+          employeeDni:1
+        },
+        relations:['typeEmployee'],
+        where:{employeeStatus:withStatus}
+      })  
+      return {
+        total:query[1],
+        data:query[0]
+      }
     }
     const calcSkip=(page-1)*size
     const query= await this.employeeRepository.findAndCount({
@@ -57,6 +73,42 @@ export class EmployeesService {
       data:query[0]
     }
   }
+  // async findAllActive(withStatus:string){
+  //   let query;
+  //   if(withStatus){
+  //     query= await this.employeeRepository.findAndCount({      
+  //       select:{
+  //         employeeId:true,
+  //         employeeFullname:true,
+  //         typeEmployee:{typeEmployeeDescription:true}
+  
+  //       },
+  //       order:{
+  //         employeeDni:1
+  //       },
+  //       relations:['typeEmployee'],
+  //       where:{employeeStatus:parseInt(withStatus)}
+  //     })  
+  //   }else{
+  //     query= await this.employeeRepository.findAndCount({      
+  //       select:{
+  //         employeeId:true,
+  //         employeeFullname:true,
+  //         typeEmployee:{typeEmployeeDescription:true}
+  
+  //       },
+  //       order:{
+  //         employeeDni:1
+  //       },
+  //       relations:['typeEmployee'],        
+  //     })  
+  //   }
+      
+  //   return {
+  //     total:query[1],
+  //     data:query[0]
+  //   }
+  // }
   /**TODO: BUSCAR POR: */
   async findOne(term: string) {
     let employee:Employee

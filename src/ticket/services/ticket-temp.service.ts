@@ -1,13 +1,11 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {validate as isUUID}  from 'uuid';
+import { DataSource, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Concept, Correlative, TicketDetailTemp, TicketTemp } from '../entities';
 import { CreateTicketTempDto, UpdateTicketTempDto } from '../dto';
 import { CreateBatchTicketTemp } from '../dto/create-batch-ticket-temp.dto';
 import { Employee } from 'src/employees/entities';
-import { Entitie } from 'src/entity/entities';
 import { UpdateArrayOfDayWorkedDelay } from '../dto/Update-array-of-day-worked-delay.dto';
 
 @Injectable()
@@ -22,6 +20,7 @@ export class TicketTempService {
         private readonly ticketDetailTempRepository:Repository<TicketDetailTemp>,
         @InjectRepository(Concept)
         private readonly conceptRepository:Repository<Concept>,
+        private readonly dataSource: DataSource
     ){}
     /**TODO: CREAR */
     async create(createTicketTempDto:CreateTicketTempDto){        
@@ -125,66 +124,88 @@ export class TicketTempService {
     }
 
     /**TODO: UPDATE DAYS WORKED,concept REMUNERATION AND DELAY */
-    async updateDaysWorkedDelay(updateArrayOfDayWorkedDelay:UpdateArrayOfDayWorkedDelay){      
+    async updateDaysWorkedDelay(updateArrayOfDayWorkedDelay:UpdateArrayOfDayWorkedDelay){  
+      //BUSCAMOS EL ID DEL CONCEPTO DE TARDANZA POR EL CODIGO """1"""    
       const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})
       const conceptDelayId=concepDelay.conceptId
+      //BUSCAMOS EL ID DEL CONCEPTO DE REMUNERACION POR EL CODIGO """2"""
       const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
       const conceptRemunerationId=conceptRemuneration.conceptId;
-
+      //CICLO FOR DEL ARREGLO DE TICKETS
       for (const element of updateArrayOfDayWorkedDelay.ticketData){
-        console.log(element);
-        let empleado= await this.ticketTempRepository.findOne({
+        //SE BUSCA EL EMPLEADO POR EL CORRELATIVO DE LA BOLETA TEMPORAL        
+        let employee= await this.ticketTempRepository.findOne({
           where:{ticketTempCorrelative:element.ticketTempCorrelative},
           relations:['employee','employee.salary','employee.workday']          
-        })        
-        if(element.ticketTempDateStartVacation && element.ticketTempDateEndVacation){
-          const queryDaysWorked= await this.ticketTempRepository.update(
-            {
-            ticketTempCorrelative:element.ticketTempCorrelative
-            },
-            {
-            ticketTempDaysWorked:element.ticketTempDaysWorked,
-            ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
-            ticketTempDaysSubsidized:element.ticketTempDaysSubsidized,
-            ticketTempDateStartVacation:element.ticketTempDateStartVacation,
-            ticketTempDateEndVacation:element.ticketTempDateEndVacation
-            })   
-        }else{
-          const queryDaysWorked= await this.ticketTempRepository.update(
-            {
-            ticketTempCorrelative:element.ticketTempCorrelative
-            },
-            {
-            ticketTempDaysWorked:element.ticketTempDaysWorked,
-            ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
-            ticketTempDaysSubsidized:element.ticketTempDaysSubsidized, 
-            }) 
-        } 
+        })
+        if (!employee) throw new NotFoundException(`No se encontro este correlativo ${element.ticketTempCorrelative}`)        
+        const salary=employee.employee.salary.salarySalary;
+        const HoursDay=employee.employee.workday.workdayHoursDay;
+        const queryRunner=this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
         try {
-          const amountRemuneration=(empleado.employee.salary.salarySalary-(empleado.employee.salary.salarySalary/30)*element.ticketTempDaysNotWorked)
+          /**
+           * VERIFICAMOS SI TRAE EL CAMPO VACACIONES Y ACTUALIZAMOS DIAS TRABAJADOS,
+           * NO TRABAJADOS, SUBSIDIADOS Y VACACIONES
+          **/          
+          if(element.ticketTempDateStartVacation && element.ticketTempDateEndVacation){            
+              const queryDaysWorked= await queryRunner.manager.update(
+                TicketTemp,
+              {
+              ticketTempCorrelative:element.ticketTempCorrelative
+              },
+              {
+              ticketTempDaysWorked:element.ticketTempDaysWorked,
+              ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
+              ticketTempDaysSubsidized:element.ticketTempDaysSubsidized,
+              ticketTempDateStartVacation:element.ticketTempDateStartVacation,
+              ticketTempDateEndVacation:element.ticketTempDateEndVacation
+              })   
+          }else{            
+              const queryDaysWorked= await queryRunner.manager.update(
+                TicketTemp,
+              {
+              ticketTempCorrelative:element.ticketTempCorrelative
+              },
+              {
+              ticketTempDaysWorked:element.ticketTempDaysWorked,
+              ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
+              ticketTempDaysSubsidized:element.ticketTempDaysSubsidized, 
+              }) 
+          }
+          //SE CALCULA LA REMUNERACION BASICA Y SE AGREGA EL CONCEPTO 
+          const amountRemuneration=(salary-(salary/30)*element.ticketTempDaysNotWorked)
           const queryRemuneration= this.ticketDetailTempRepository.create({
             ticketTempCorrelative:element.ticketTempCorrelative,
             conceptId:conceptRemunerationId,
             ticketDetailTempAmount:amountRemuneration
           })
-          await this.ticketDetailTempRepository.save(queryRemuneration)     
-          const amountDelayDays=(empleado.employee.salary.salarySalary/30)*element.delayDays
-          const amountDelayHours=((empleado.employee.salary.salarySalary/30)/empleado.employee.workday.workdayHoursDay)*element.delayHours
-          const amountDelayMinutes=(((empleado.employee.salary.salarySalary/30)/empleado.employee.workday.workdayHoursDay)/60)*element.delayMinutes
+          //SE CALCULA LA TARDANZA Y SE AGREGA EL CONCEPTO              
+          const amountDelayDays=(salary/30)*element.delayDays
+          const amountDelayHours=((salary/30)/HoursDay)*element.delayHours
+          const amountDelayMinutes=(((salary/30)/HoursDay)/60)*element.delayMinutes
           const totalAmountDelay=amountDelayDays+amountDelayHours+amountDelayMinutes
           const queryDelay=  this.ticketDetailTempRepository.create({
             ticketTempCorrelative:element.ticketTempCorrelative,
             conceptId:conceptDelayId,
             ticketDetailTempAmount:totalAmountDelay
-          })  
-          await this.ticketDetailTempRepository.save(queryDelay)       
-        } catch (error) {
-          console.log('error')
+          })
+          /**
+           * GUARDAMOS LOS 3 CAMBIOS(ACTUALIZACION DEL TICKET Y LA AGREGACION DE LOS 2 
+           * CONCEPTOS AL DETALLE DE BOLETA) SI FALLA APLICAMOS ROLLBACK
+          **/            
+          await queryRunner.manager.save(queryRemuneration);
+          await queryRunner.manager.save(queryDelay);
+          await queryRunner.commitTransaction();          
+        } catch (error) {     
+          await queryRunner.rollbackTransaction()     
           this.handleDBExceptions(error);
-        }    
-      }
-      return 'hecho'
-
+        } finally {          
+          await queryRunner.release()
+        }
+      }      
+      return {msg:'Se importaron todos los correlativos satisfactoriamente'}
     }
     /**TODO: PAGINACION */
     async findAll(paginationDto:PaginationDto){

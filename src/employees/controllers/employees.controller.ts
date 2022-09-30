@@ -18,9 +18,15 @@ export class EmployeesController {
 
   @Get()
   @Authorization(ValidRoles.user)
-  findAll(@Query()paginationDto:PaginationDto) {    
+  findAll(@Query() paginationDto:PaginationDto) {    
     return this.employeesService.findAll(paginationDto);
   }
+
+  // @Get('employee-custom')
+  // @Authorization(ValidRoles.user)
+  // findAllActive(@Query() withStatus:string){
+  //   return this.employeesService.findAllActive(withStatus);
+  // }
 
   @Get(':term')
   @Authorization(ValidRoles.user)

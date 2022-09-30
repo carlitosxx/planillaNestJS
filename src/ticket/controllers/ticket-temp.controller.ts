@@ -5,7 +5,6 @@ import { CreateTicketTempDto,UpdateTicketTempDto } from '../dto';
 import { ValidRoles } from 'src/auth/interfaces';
 import { Authorization } from 'src/auth/decorators';
 import { CreateBatchTicketTemp } from '../dto/create-batch-ticket-temp.dto';
-import { query } from 'express';
 import { UpdateArrayOfDayWorkedDelay } from '../dto/Update-array-of-day-worked-delay.dto';
 
 @Controller('ticket-temp')

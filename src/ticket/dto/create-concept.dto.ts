@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsString, MaxLength } from "class-validator";
+import { IsBoolean, IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
 import { TypeConcept } from "../entities";
 
 export class CreateConceptDto{  
@@ -21,13 +21,14 @@ export class CreateConceptDto{
 
     @IsBoolean()
     conceptIsDiscounted:boolean;
-    
+
     @IsNumber()
-    conceptCode:number
+    @IsOptional()
+    conceptCode?:number
 
     @IsBoolean()
     conceptIsCalculated:boolean;
 
-    @IsString()
+    @IsString()    
     typeConcept:TypeConcept;
 }

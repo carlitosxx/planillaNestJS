@@ -28,4 +28,8 @@ export class PaginationDto{
     @IsOptional()
     @IsUUID()
     pensionSystemId?:string;
+    
+    @IsOptional()
+    @Type(()=>Number)
+    withStatus?:number
 }
