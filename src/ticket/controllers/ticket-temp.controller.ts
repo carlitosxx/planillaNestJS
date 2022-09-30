@@ -45,7 +45,7 @@ export class TicketTempController {
     @Put(':id')
     @Authorization(ValidRoles.user)
     update(
-      @Param('id',ParseUUIDPipe) id: string,
+      @Param('id') id: string,
       @Body() updateConceptDto: UpdateTicketTempDto) {
       return this.ticketTempService.update(id, updateConceptDto);
     }

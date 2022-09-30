@@ -163,19 +163,25 @@ export class TicketTempService {
               ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
               ticketTempDaysSubsidized:element.ticketTempDaysSubsidized,
               ticketTempDateStartVacation:element.ticketTempDateStartVacation,
-              ticketTempDateEndVacation:element.ticketTempDateEndVacation
+              ticketTempDateEndVacation:element.ticketTempDateEndVacation,
+              ticketTempDelayDays:element.delayDays,
+              ticketTempDelayHours:element.delayHours,
+              ticketTempDelayMinutes:element.delayMinutes
               })   
           }else{            
               const queryDaysWorked= await queryRunner.manager.update(
                 TicketTemp,
-              {
-              ticketTempCorrelative:element.ticketTempCorrelative
-              },
-              {
-              ticketTempDaysWorked:element.ticketTempDaysWorked,
-              ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
-              ticketTempDaysSubsidized:element.ticketTempDaysSubsidized, 
-              }) 
+                {
+                ticketTempCorrelative:element.ticketTempCorrelative
+                },
+                {
+                ticketTempDaysWorked:element.ticketTempDaysWorked,
+                ticketTempDaysNotWorked:element.ticketTempDaysNotWorked,
+                ticketTempDaysSubsidized:element.ticketTempDaysSubsidized,
+                ticketTempDelayDays:element.delayDays,
+                ticketTempDelayHours:element.delayHours,
+                ticketTempDelayMinutes:element.delayMinutes 
+                }) 
           }
           //SE CALCULA LA REMUNERACION BASICA Y SE AGREGA EL CONCEPTO 
           const amountRemuneration=(salary-(salary/30)*element.ticketTempDaysNotWorked)
@@ -218,7 +224,7 @@ export class TicketTempService {
           take:size,
           skip:calcSkip,
           relations:[
-            'entity','responsible','employee','employee.typeEmployee',
+            'entity','entity.financing','entity.budgetGoal','responsible','employee','employee.typeEmployee',
             'employee.organicUnit','employee.condition','employee.laborRegime','employee.occupationalGroup',
             'employee.establishment','employee.position','employee.workday','employee.salary',
             'employee.salary.employeeCategory','employee.pensionAdministrator','employee.pensionAdministrator.pensionSystem'],
@@ -274,12 +280,49 @@ export class TicketTempService {
       }
 
     /**TODO: ACTUALIZAR */
-    async update(id: string, updateTicketTempDto: UpdateTicketTempDto) {      
-        var data=await this.ticketTempRepository.preload({
+    async update(id: string, updateTicketTempDto: UpdateTicketTempDto) {  
+       //BUSCAMOS EL ID DEL CONCEPTO DE TARDANZA POR EL CODIGO """1"""    
+       const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})
+       const conceptDelayId=concepDelay.conceptId
+       //BUSCAMOS EL ID DEL CONCEPTO DE REMUNERACION POR EL CODIGO """2"""
+       const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
+       const conceptRemunerationId=conceptRemuneration.conceptId;
+
+      const {ticketTempDelayDays,ticketTempDelayHours,ticketTempDelayMinutes}=updateTicketTempDto
+      var data=await this.ticketTempRepository.preload({
             ticketTempCorrelative:id,
           ...updateTicketTempDto
-        });
-        if(!data) throw new NotFoundException(`The search with id: ${id} not found`)
+      });
+      if(!data) throw new NotFoundException(`La busqueda con el correlativo: ${id} no ah sido encontrada`)
+      let employee= await this.ticketTempRepository.findOne({
+        where:{ticketTempCorrelative:id},
+        relations:['employee','employee.salary','employee.workday']          
+      })
+      const salary=employee.employee.salary.salarySalary;
+      const HoursDay=employee.employee.workday.workdayHoursDay;
+      const amountDelayDays=(salary/30)*ticketTempDelayDays
+          const amountDelayHours=((salary/30)/HoursDay)*ticketTempDelayHours
+          const amountDelayMinutes=(((salary/30)/HoursDay)/60)*ticketTempDelayMinutes
+          const totalAmountDelay=amountDelayDays+amountDelayHours+amountDelayMinutes
+      const conceptDelay=await this.ticketDetailTempRepository.findOne({
+        where:{
+          ticketTempCorrelative:id,
+          conceptId:conceptDelayId
+        }
+      })
+      if (conceptDelay){
+        //CALCULAMOS LA TARDANZA
+        salary
+        //ACTUALIZAMOS
+        await this.ticketDetailTempRepository.update({
+          ticketTempCorrelative:id,
+          conceptId:conceptDelayId      
+        },{
+          ticketDetailTempAmount:totalAmountDelay,
+        })
+      }else{
+        //creamos
+      }
       try {  
           await this.ticketTempRepository.save(data)        
           return data;       
@@ -287,6 +330,7 @@ export class TicketTempService {
         this.handleDBExceptions(error)
       }
     }
+
     /**TODO: BORRAR */
     async remove(id: string) {
         const data=await this.findOne(id);
