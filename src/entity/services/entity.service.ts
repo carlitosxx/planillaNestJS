@@ -79,8 +79,7 @@ async findOne(term: string) {
 
 /**TODO: ACTUALIZAR */
 async update(id: string, updateEntityDto: UpdateEntityDto,file?:Express.Multer.File) {
-  if (!file){
-    console.log
+  if (!file){    
     var entity=await this.entityRepository.preload({
       entityId:id,
       ...updateEntityDto

@@ -28,23 +28,36 @@ export class ResponsibleController {
             if(!file) throw new BadRequestException('Make sure that the file is an image ')
         return this.responsibleService.create(createResponsibleDto,file);
     }
+
     @Get()
     @Authorization(ValidRoles.user)
     findAll(@Query() paginationDto:PaginationDto){
         return this.responsibleService.findAll(paginationDto);
     }
+    
     @Get(':term')
     @Authorization(ValidRoles.user)
     findOne(@Param('term') term: string) {
     return this.responsibleService.findOne(term);
     }
+
     @Put(':id')
     @Authorization(ValidRoles.user)
+    @UseInterceptors( FileInterceptor('file',{
+      fileFilter:fileFilter,
+      limits:{fileSize:1000000*5},
+      storage:diskStorage({
+        destination:'./static/images',
+        filename:fileNamer
+      })
+    }))
     update(
       @Param('id',ParseUUIDPipe) id: string,
-      @Body() updateResponsibleDto: UpdateResponsibleDto) {
-      return this.responsibleService.update(id, updateResponsibleDto);
+      @UploadedFile() file:Express.Multer.File,
+      @Body() updateResponsibleDto) {        
+      return this.responsibleService.update(id, updateResponsibleDto,file);
     }
+
     @Delete(':id')
     @Authorization(ValidRoles.admin)
     remove(@Param('id',ParseUUIDPipe) id: string) {

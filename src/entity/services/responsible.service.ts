@@ -19,13 +19,13 @@ export class ResponsibleService {
         private readonly responsibleRepository:Repository<Responsible>
     ){}
      /**TODO: CREAR */
-     async create(createResponsibleDto,file){
-      createResponsibleDto.responsibleSignature=file.filename
-      console.log(createResponsibleDto.responsibleStatus)
-      if(createResponsibleDto.responsibleStatus==="1"){
-        const directory=join(__dirname,'../../..','static/images',file.filename)        
-        await unlinkAsync(directory);
-        throw new BadRequestException('change you responsibleStatus to 0')
+     async create(createResponsibleDto,file:Express.Multer.File){
+      createResponsibleDto.responsibleSignature=file.filename      
+      if(createResponsibleDto.responsibleStatus==1){
+        // const directory=join(__dirname,'../../..','static/images',file.filename)        
+        // await unlinkAsync(directory);
+        // throw new BadRequestException('change you responsibleStatus to 0')
+        await this.responsibleRepository.update({responsibleStatus:1},{responsibleStatus:0})
       } 
         try {
             const responsible=this.responsibleRepository.create(createResponsibleDto)
@@ -74,16 +74,34 @@ export class ResponsibleService {
     }
 
     /**TODO: ACTUALIZAR */
-    async update(id: string, updateResponsibleDto: UpdateResponsibleDto) {      
-        var responsible=await this.responsibleRepository.preload({
+    async update(id: string, updateResponsibleDto:UpdateResponsibleDto,file:Express.Multer.File) { 
+        if (!file){
+          var responsible=await this.responsibleRepository.preload({
             responsibleId:id,
           ...updateResponsibleDto
-        });
-        if(!responsible) throw new NotFoundException(`responsible with id: ${id} not found`)
-      try {  
+          });
+        }else{
+          updateResponsibleDto.responsibleSignature=file.filename
+          var responsible=await this.responsibleRepository.preload({
+            responsibleId:id,
+          ...updateResponsibleDto
+          });
+        }
+        if(!responsible){
+          const directory=join(__dirname,'../../..','static/images',file.filename)        
+          await unlinkAsync(directory);
+          throw new NotFoundException(`responsible with id: ${id} not found`)
+        } 
+
+      try {                  
+        if (responsible.responsibleStatus==1){          
+          await this.responsibleRepository.update({responsibleStatus:1},{responsibleStatus:0})
+        }
           await this.responsibleRepository.save(responsible)        
           return responsible       
       } catch (error) {      
+        if (file){ const directory=join(__dirname,'../../..','static/images',file.filename)        
+        await unlinkAsync(directory);}   
         this.handleDBExceptions(error)
       }
     }
@@ -93,7 +111,7 @@ export class ResponsibleService {
       try {
         await this.responsibleRepository.remove(financing)
         return {msg:'deleted financing'}
-      } catch (error) {        
+      } catch (error) {            
         this.handleDBExceptions(error)
       }
     }
