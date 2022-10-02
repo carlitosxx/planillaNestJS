@@ -281,39 +281,52 @@ export class TicketTempService {
 
     /**TODO: ACTUALIZAR */
     async update(id: string, updateTicketTempDto: UpdateTicketTempDto) {  
-       //BUSCAMOS EL ID DEL CONCEPTO DE TARDANZA POR EL CODIGO """1"""    
-       const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})
-       const conceptDelayId=concepDelay.conceptId
-       //BUSCAMOS EL ID DEL CONCEPTO DE REMUNERACION POR EL CODIGO """2"""
-       const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
-       const conceptRemunerationId=conceptRemuneration.conceptId;
-
-      const {ticketTempDelayDays,ticketTempDelayHours,ticketTempDelayMinutes}=updateTicketTempDto
+      //BUSCAMOS EL ID DEL CONCEPTO DE TARDANZA POR EL CODIGO """1"""    
+      const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})
+      const conceptDelayId=concepDelay.conceptId
+      //BUSCAMOS EL ID DEL CONCEPTO DE REMUNERACION POR EL CODIGO """2"""
+      const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
+      const conceptRemunerationId=conceptRemuneration.conceptId;
+      //SACAMOS LOS TIEMPOS DE TARDANZA
+      const {ticketTempDelayDays,ticketTempDelayHours,ticketTempDelayMinutes,ticketTempDaysNotWorked}=updateTicketTempDto
+      //BUSCAMOS POR ID Y CARGAMOS
       var data=await this.ticketTempRepository.preload({
             ticketTempCorrelative:id,
           ...updateTicketTempDto
       });
+      //SI NO EXISTE MANDAR MENSAJE DE EXCEPCION
       if(!data) throw new NotFoundException(`La busqueda con el correlativo: ${id} no ah sido encontrada`)
+      //CASO CONTRARIO BUSCAR TICKET Y SACAR LOS DATOS DE EMPLEADO
       let employee= await this.ticketTempRepository.findOne({
         where:{ticketTempCorrelative:id},
         relations:['employee','employee.salary','employee.workday']          
       })
+      //SALARIO
       const salary=employee.employee.salary.salarySalary;
+      //JORNADA DE HORAS TRABAJADAS AL DIA
       const HoursDay=employee.employee.workday.workdayHoursDay;
+      //MONTOS
       const amountDelayDays=(salary/30)*ticketTempDelayDays
-          const amountDelayHours=((salary/30)/HoursDay)*ticketTempDelayHours
-          const amountDelayMinutes=(((salary/30)/HoursDay)/60)*ticketTempDelayMinutes
-          const totalAmountDelay=amountDelayDays+amountDelayHours+amountDelayMinutes
-      const conceptDelay=await this.ticketDetailTempRepository.findOne({
+      const amountDelayHours=((salary/30)/HoursDay)*ticketTempDelayHours
+      const amountDelayMinutes=(((salary/30)/HoursDay)/60)*ticketTempDelayMinutes
+      const totalAmountDelay=amountDelayDays+amountDelayHours+amountDelayMinutes
+      const amountRemuneration=(salary-(salary/30)*ticketTempDaysNotWorked)
+      //BUSCAR CONCEPTO DE TARDANZA
+      const delay=await this.ticketDetailTempRepository.findOne({
         where:{
           ticketTempCorrelative:id,
           conceptId:conceptDelayId
         }
       })
-      if (conceptDelay){
-        //CALCULAMOS LA TARDANZA
-        salary
-        //ACTUALIZAMOS
+      //BUSCAR CONCEPTO DE REMUNERACION
+      const remuneration=await this.ticketDetailTempRepository.findOne({
+        where:{
+          ticketTempCorrelative:id,
+          conceptId:conceptRemunerationId
+        }
+      })
+      //SI EXISTE EL CONCEPTO TARDANZA ACTUALIZAMOS CASO CONTRARIO CREAMOS
+      if (delay){                
         await this.ticketDetailTempRepository.update({
           ticketTempCorrelative:id,
           conceptId:conceptDelayId      
@@ -321,7 +334,20 @@ export class TicketTempService {
           ticketDetailTempAmount:totalAmountDelay,
         })
       }else{
-        //creamos
+        const data =  this.ticketDetailTempRepository.create({ticketTempCorrelative:id,conceptId:conceptDelayId,ticketDetailTempAmount:totalAmountDelay})
+        await this.ticketDetailTempRepository.save(data)
+      }
+      //SI EXISTE EL CONCEPTO REMUNERACION ACTUALIZAMOS CASO CONTRARIO CREAMOS
+      if (remuneration){                
+        await this.ticketDetailTempRepository.update({
+          ticketTempCorrelative:id,
+          conceptId:conceptRemunerationId      
+        },{
+          ticketDetailTempAmount:amountRemuneration,
+        })
+      }else{
+        const data =  this.ticketDetailTempRepository.create({ticketTempCorrelative:id,conceptId:conceptRemunerationId,ticketDetailTempAmount:amountRemuneration})
+        await this.ticketDetailTempRepository.save(data)
       }
       try {  
           await this.ticketTempRepository.save(data)        
