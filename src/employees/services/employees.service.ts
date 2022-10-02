@@ -43,6 +43,7 @@ export class EmployeesService {
         select:{
           employeeId:true,
           employeeFullname:true,
+          employeeDni:true,
           typeEmployee:{typeEmployeeDescription:true}
   
         },
