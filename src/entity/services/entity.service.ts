@@ -78,8 +78,15 @@ async findOne(term: string) {
 }
 
 /**TODO: ACTUALIZAR */
-async update(id: string, updateEntityDto: UpdateEntityDto,file:Express.Multer.File) { 
-  updateEntityDto.entityLogo=file.filename   
+async update(id: string, updateEntityDto: UpdateEntityDto,file?:Express.Multer.File) {
+  if (!file){
+    console.log
+    var entity=await this.entityRepository.preload({
+      entityId:id,
+      ...updateEntityDto
+    });
+  }else{    
+    updateEntityDto.entityLogo=file.filename   
     var entity=await this.entityRepository.preload({
       entityId:id,
       ...updateEntityDto
@@ -89,15 +96,18 @@ async update(id: string, updateEntityDto: UpdateEntityDto,file:Express.Multer.Fi
       // BORRAR EL ARCHIVO RECIBIDO PQ NO ENCONTRO EL ID
       const directory=join(__dirname,'../../..','static/images',file.filename)        
       await unlinkAsync(directory);
-      throw new NotFoundException(`Entity with id: ${id} not found`)
+      throw new NotFoundException(`Entidad con id: ${id} no encontrado`)
     }
+  }  
+ 
   try {  
       await this.entityRepository.save(entity)
       //SI ACTUALIZA LA FOTO NO BORRA LA ANTERIOR        
       return entity       
   } catch (error) {
-    const directory=join(__dirname,'../../..','static/images',file.filename)        
-    await unlinkAsync(directory);      
+    if (file){ const directory=join(__dirname,'../../..','static/images',file.filename)        
+    await unlinkAsync(directory);}
+         
     this.handleDBExceptions(error)
   }
 }

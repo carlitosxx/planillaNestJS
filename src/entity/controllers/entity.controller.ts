@@ -51,7 +51,7 @@ export class EntityController {
     @Param('id',ParseUUIDPipe) id: string,
     @UploadedFile() file:Express.Multer.File,
     @Body() updateEntityDto)
-  {
+  {    
       // if(!file) throw new BadRequestException('Make sure that the file is an image ')
       return this.entityService.update(id, updateEntityDto,file);
   }
