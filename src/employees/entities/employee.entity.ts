@@ -15,47 +15,93 @@ import { Workday } from "./workday.entity";
 export class Employee {
     @PrimaryGeneratedColumn('uuid')
     employeeId: string;
+
     @Column("text",{unique:true})
     employeeDni: string;
+
     @Column("text")
     employeeFullname: string;
+
     @Column("numeric",{
       default:1})    
     employeeStatus: number;
+
     @Column({type:"date",nullable:false})
     employeeEntryDate: Date;
+
     @Column("text")
     employeeCUSPP: string;
+
     @Column("text")
     employeeAIRHSP: string;
-    @ManyToOne(()=>TypeEmployee,typeEmployee=>typeEmployee.typeEmployeeId)
+
+    @ManyToOne(
+      ()=>TypeEmployee,
+      typeEmployee=>typeEmployee.typeEmployeeId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'typeEmployeeId',referencedColumnName:'typeEmployeeId'})
     typeEmployee: TypeEmployee;
-    @ManyToOne(()=>OrganicUnit,organicUnit=>organicUnit.organicUnitId)
+
+    @ManyToOne(
+      ()=>OrganicUnit,
+      organicUnit=>organicUnit.organicUnitId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'organicUnitId'})
     organicUnit: OrganicUnit;
-    @ManyToOne(()=>Condition,condition=>condition.conditionId)
+
+    @ManyToOne(
+      ()=>Condition,
+      condition=>condition.conditionId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'conditionId'})
     condition: Condition;
-    @ManyToOne(()=>LaborRegime,laborRegime=>laborRegime.laborRegimeId)
+
+    @ManyToOne(
+      ()=>LaborRegime,
+      laborRegime=>laborRegime.laborRegimeId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'laborRegimeId'})
     laborRegime: LaborRegime;
-    @ManyToOne(()=>OccupationalGroup,occupationalGroup=>occupationalGroup.occupationalGroupId)
+
+    @ManyToOne(
+      ()=>OccupationalGroup,
+      occupationalGroup=>occupationalGroup.occupationalGroupId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'occupationalGroupId'})
     occupationalGroup: OccupationalGroup;
-    @ManyToOne(()=>Establishment,establishment=>establishment.establishmentId)
+
+    @ManyToOne(
+      ()=>Establishment,
+      establishment=>establishment.establishmentId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'establishmentId'})
     establishment: Establishment;
-    @ManyToOne(()=>Position,position=>position.positionId)
+
+    @ManyToOne(
+      ()=>Position,
+      position=>position.positionId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'positionId'})
     position: Position;
-    @ManyToOne(()=>Workday,workday=>workday.workdayId)
+
+    @ManyToOne(
+      ()=>Workday,
+      workday=>workday.workdayId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'workdayId'})
     workday: Workday;
-    @ManyToOne(()=>Salary,salary=>salary.salaryId)
+
+    @ManyToOne(
+      ()=>Salary,
+      salary=>salary.salaryId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'salaryId'})
     salary:Salary;
-    @ManyToOne(()=>PensionAdministrator,pensionAdministrator=>pensionAdministrator.pensionAdministratorId)
+
+    @ManyToOne(
+      ()=>PensionAdministrator,
+      pensionAdministrator=>pensionAdministrator.pensionAdministratorId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'pensionAdministratorId'})
     pensionAdministrator:PensionAdministrator;
 }

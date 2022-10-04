@@ -82,6 +82,15 @@ export class OrganicUnitService {
         this.handleDBExceptions(error)
       }
     }
+    /**TODO: BORRAR TODO */
+    async removeAll(){
+      try {
+        await this.organicUnitRepository.createQueryBuilder().delete().execute()        
+        return {msg:'Borrar todo'}
+      } catch (error) {
+        this.handleDBExceptions(error)
+      }
+    }
 
     /**TODO: ATRAPAR ERRORES DE BD */
     private handleDBExceptions(error:any){    

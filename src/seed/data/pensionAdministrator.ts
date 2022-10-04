@@ -1,0 +1,29 @@
+export const pensionAdministratorData={
+    data:[
+        {
+            "pensionAdministratorCode":"000001",
+            "pensionAdministratorDescription":"estado",
+            "pensionSystem":""
+        },
+        {
+            "pensionAdministratorCode":"000002",
+            "pensionAdministratorDescription":"integra",
+            "pensionSystem":""
+        },
+        {
+            "pensionAdministratorCode":"000003",
+            "pensionAdministratorDescription":"profuturo",
+            "pensionSystem":""
+        },
+        {
+            "pensionAdministratorCode":"000004",
+            "pensionAdministratorDescription":"habitat",
+            "pensionSystem":""
+        },
+        {
+            "pensionAdministratorCode":"000005",
+            "pensionAdministratorDescription":"prima",
+            "pensionSystem":""
+        },
+    ]
+}

@@ -8,6 +8,7 @@ import { join } from 'path';
 import { EntityModule } from './entity/entity.module';
 import { AuthModule } from './auth/auth.module';
 import { TicketModule } from './ticket/ticket.module';
+import { SeedModule } from './seed/seed.module';
 import {ServeStaticModule}from '@nestjs/serve-static' 
 
 
@@ -32,7 +33,8 @@ import {ServeStaticModule}from '@nestjs/serve-static'
     FilesModule,
     EntityModule,
     AuthModule,
-    TicketModule
+    TicketModule,
+    SeedModule
   ],
 
 })

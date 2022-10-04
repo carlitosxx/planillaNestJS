@@ -50,6 +50,22 @@ import { AuthModule } from 'src/auth/auth.module';
       Establishment, Position, Workday, EmployeeCategory, Salary, PensionSystem,
       PensionAdministrator
     ])
+  ],
+  exports:[
+    TypeOrmModule,
+    OrganicUnitService,
+    TypeEmployeeService,
+    ConditionService,
+    LaborRegimeService,
+    OccupationalGroupService,
+    EstablishmentService,
+    PositionService,
+    WorkdayService,
+    EmployeeCategoryService,
+    SalaryService,
+    PensionSystemService,
+    PensionAdministratorService,
+    EmployeesService
   ]
 })
 export class EmployeesModule {}

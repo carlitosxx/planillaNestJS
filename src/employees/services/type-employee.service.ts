@@ -68,6 +68,7 @@ export class TypeEmployeeService {
         this.handleDBExceptions(error)
       }
     }
+
     /**TODO: BORRAR */
     async remove(id: string) {
       const typeEmployee=await this.findOne(id);
@@ -76,11 +77,18 @@ export class TypeEmployeeService {
         return {msg:'deleted type employee'}
       } catch (error) {        
         this.handleDBExceptions(error)
-      }
-      
-      
+      }    
     }
 
+ /**TODO: BORRAR TODO */
+    async removeAll(){
+      try {
+        await this.typeEmployeeRepository.createQueryBuilder().delete().execute()        
+        return {msg:'Borrar todo'}
+      } catch (error) {
+        this.handleDBExceptions(error)
+      }
+    }
 
     /**TODO: ATRAPAR ERRORES DE BD */
     private handleDBExceptions(error:any){    

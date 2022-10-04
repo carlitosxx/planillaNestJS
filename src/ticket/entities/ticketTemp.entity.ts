@@ -24,7 +24,10 @@ export class TicketTemp {
     @JoinColumn({name:'entitieId'})
     entity:Entitie; 
 
-    @ManyToOne(()=>Employee,employee=>employee.employeeId)
+    @ManyToOne(
+        ()=>Employee,
+        employee=>employee.employeeId,
+        {onDelete:'CASCADE'})
     @JoinColumn({name:'employeeId'})
     employee:Employee; 
 

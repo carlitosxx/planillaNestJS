@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConsoleLogger, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
@@ -20,11 +20,16 @@ export class TicketTempService {
         private readonly ticketDetailTempRepository:Repository<TicketDetailTemp>,
         @InjectRepository(Concept)
         private readonly conceptRepository:Repository<Concept>,
+        @InjectRepository(Employee)
+        private readonly employeeRepository:Repository<Employee>,
         private readonly dataSource: DataSource
     ){}
+
     /**TODO: CREAR */
     async create(createTicketTempDto:CreateTicketTempDto){        
       let verifyMonthYear: TicketTemp;  
+      let correlative:Correlative;
+      let verifyTicket: TicketTemp;
       try {
         // VERIFICAR SI EXISTE UNA BOLETA EN ESE MES Y AÑO
         verifyMonthYear=await this.ticketTempRepository.findOne({
@@ -34,39 +39,103 @@ export class TicketTempService {
             ticketTempYear:createTicketTempDto.ticketTempYear,          
           }
         })            
-      } catch (error) {       
+      } catch (error) {               
         this.handleDBExceptions(error);
       }            
       if(verifyMonthYear) throw new BadRequestException('El empleado tiene una boleta en esta fecha')
-      //OBTENER EL ULTIMO NUMERO DEL CORRELATIVO
-      const correlative= await this.correlativeRepository.findOne({
-        where:{
-            correlativeYear:createTicketTempDto.ticketTempYear,
-            correlativeSerie:"t"}
+      //OBTENER EL ULTIMO NUMERO DEL CORRELATIVO      
+      try {
+         correlative= await this.correlativeRepository.findOne({
+          where:{
+              correlativeYear:createTicketTempDto.ticketTempYear,
+              correlativeSerie:"t"}
         })
-      if(!correlative) throw new NotFoundException(`Numero de correlativo con serie: T y año:${createTicketTempDto.ticketTempYear} no fue encontrado`)      
-      const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
-      //ARMAR EL CORRELATIVO CON AÑO Y SERIE
-      createTicketTempDto.ticketTempCorrelative=`${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
-      const verifyTicket=await this.ticketTempRepository.findBy({ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative})
-      if(verifyTicket.length!=0) throw new  BadRequestException(
+      } catch (error) {          
+        this.handleDBExceptions(error);
+      }   
+      if(!correlative) throw new NotFoundException(
+        `Numero de correlativo con serie: T y año:${createTicketTempDto.ticketTempYear} no fue encontrado`)
+      try {
+        //ARMAR EL NUMERO DE CORRELATIVO
+        const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
+        //ARMAR EL CORRELATIVO CON AÑO, SERIE Y NUMERO
+        createTicketTempDto.ticketTempCorrelative=
+        `${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}` 
+        //BUSCAR EL CORRELATIVO
+        verifyTicket=await this.ticketTempRepository.findOne(
+          {where:{ticketTempCorrelative:createTicketTempDto.ticketTempCorrelative}})
+        //VERIFICAR SI EXISTE CORRELATIVO COMPLETO
+      } catch (error) {        
+        this.handleDBExceptions(error);
+      }
+      if(verifyTicket) throw new  BadRequestException(
       `La llave ("ticketTempCorrelative")=(${createTicketTempDto.ticketTempCorrelative}) actualmente existe.`) 
-        try {           
-            const data=this.ticketTempRepository.create(createTicketTempDto)
-            await this.ticketTempRepository.save(data);    
-            await this.correlativeRepository.update({ 
+      //EMPEZAR QUERY RUNNER 
+      const queryRunner=this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction(); 
+      try {     
+          //GUARDA Y ACTUALIZA EL TICKET          
+          const data=this.ticketTempRepository.create(createTicketTempDto)          
+          await queryRunner.manager.save(data)  
+          await queryRunner.manager.update(
+            Correlative,
+            { 
               correlativeYear: createTicketTempDto.ticketTempYear,
-              correlativeSerie:"t"},
+              correlativeSerie:"t"
+            },
+            {
+              correlativeNumber:correlative.correlativeNumber+1
+            })          
+          //GUARDAR LOS CONCEPTOS DE REMUNERACION, TARDANZA Y OTROS
+          const resultDelay = await this.addOrUpdateConceptToDetail(data.ticketTempCorrelative,data,1)
+          if(resultDelay.conceptFound) {
+              await queryRunner.manager.update(
+                TicketDetailTemp,
+                {
+                  ticketTempCorrelative:resultDelay.ticketTempCorrelative,
+                  conceptId:resultDelay.conceptId      
+                },
+                {
+                  ticketDetailTempAmount:resultDelay.ticketDetailTempAmount,
+                })   
+          }
+          else{
+              const data = this.ticketDetailTempRepository.create({
+              ticketTempCorrelative:resultDelay.ticketTempCorrelative,
+              conceptId:resultDelay.conceptId ,
+              ticketDetailTempAmount:resultDelay.ticketDetailTempAmount})
+              await queryRunner.manager.save(data)
+          }
+          const resultRemuneration = await this.addOrUpdateConceptToDetail(data.ticketTempCorrelative,data,2) 
+          if(resultRemuneration.conceptFound){
+            await queryRunner.manager.update(
+              TicketDetailTemp,
               {
-                correlativeNumber:correlative.correlativeNumber+1
-              })          
-            return data;
-        } catch (error) {
-          console.log('error')
-            this.handleDBExceptions(error);
-        }
+              ticketTempCorrelative:resultRemuneration.ticketTempCorrelative,
+              conceptId:resultRemuneration.conceptId      
+              },{
+              ticketDetailTempAmount:resultRemuneration.ticketDetailTempAmount,
+              })
+          }
+          else{
+            const data =  this.ticketDetailTempRepository.create({
+              ticketTempCorrelative:resultRemuneration.ticketTempCorrelative,
+              conceptId:resultRemuneration.conceptId,
+              ticketDetailTempAmount:resultRemuneration.ticketDetailTempAmount})
+            await queryRunner.manager.save(data)
+          }
+          await queryRunner.commitTransaction();  
+          return data;
+      } catch (error) {               
+        await queryRunner.rollbackTransaction()     
+        this.handleDBExceptions(error);
+      } finally {          
+        await queryRunner.release()
+      }
     }
-    /**TODO: CREAR POR LOTE */
+
+    /**TODO: CREAR BOLETA POR LOTE */
     async createBatch(createBatchTicketTemp:CreateBatchTicketTemp){
       for (const element of createBatchTicketTemp.employees) {
         let verifyMonthYear: TicketTemp;  
@@ -126,7 +195,7 @@ export class TicketTempService {
         return 'se agrego'; 
     }
 
-    /**TODO: ACTUALIZAR BOLETA Y AGREGAR CONCEPTOS DE REMUNERACION Y TARDANZA */
+    /**TODO: ACTUALIZAR POR LOTE LA BOLETA Y AGREGAR CONCEPTOS DE REMUNERACION Y TARDANZA */
     async updateDaysWorkedDelay(updateArrayOfDayWorkedDelay:UpdateArrayOfDayWorkedDelay){  
       //BUSCAMOS EL ID DEL CONCEPTO DE TARDANZA POR EL CODIGO """1"""    
       const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})
@@ -216,6 +285,7 @@ export class TicketTempService {
       }      
       return {msg:'Se importaron todos los correlativos satisfactoriamente'}
     }
+
     /**TODO: PAGINACION */
     async findAll(paginationDto:PaginationDto){
         const {page=1,size=100}=paginationDto
@@ -246,6 +316,7 @@ export class TicketTempService {
           data
         }
     }
+
     /**TODO: BUSCAR POR AÑO Y MES */
     async findByYearMonth(ticketTempYear:number,ticketTempMonth:number){     
      const data=await this.ticketTempRepository.find({
@@ -258,6 +329,7 @@ export class TicketTempService {
       })      
       return data;
     }
+    
     /**TODO: BUSCAR POR: */
     async findOne(term: string) {      
         let data:TicketTemp                 
@@ -278,78 +350,125 @@ export class TicketTempService {
         newData.concetps=arrayConcepts
         return newData
       }
+    //TODO: AGREGAR O ACTUALIZAR CONCEPTO A DETALLE
+    async addOrUpdateConceptToDetail(correlative:string,updateTicketTempDto:UpdateTicketTempDto,conceptCode:number,amount?:number){
+      const {ticketTempDelayDays,ticketTempDelayHours,ticketTempDelayMinutes,ticketTempDaysNotWorked}=updateTicketTempDto
+      //BUSCAMOS EL ID DEL CONCEPTO POR EL CODE    
+      const concept= await this.conceptRepository.findOne({ where:{conceptCode:conceptCode}})
+      const conceptId=concept.conceptId     
+      const ticketDetailTempAmount=0;
+      //BUSCAMOS SALARIO Y JORNADA LABORAL
+      let employee= await this.employeeRepository.findOne({
+        where:{employeeId:updateTicketTempDto.employee.toString()},
+        relations:['salary','workday']          
+      })      
+      const salary=employee.salary.salarySalary;
+      const HoursDay=employee.workday.workdayHoursDay;  
+      //BUSCAR SI TIENE EL CONCEPTO
+      const conceptFound=await this.ticketDetailTempRepository.findOne({
+        where:{
+          ticketTempCorrelative:correlative,
+          conceptId:conceptId
+        }
+      })    
+      switch(conceptCode) { 
+        case 1: { 
+          //TADANZA
+          const amountDelayDays=(salary/30)*ticketTempDelayDays
+          const amountDelayHours=((salary/30)/HoursDay)*ticketTempDelayHours
+          const amountDelayMinutes=(((salary/30)/HoursDay)/60)*ticketTempDelayMinutes
+          const totalAmountDelay=amountDelayDays+amountDelayHours+amountDelayMinutes 
+          if (conceptFound){   
+            return  {
+              conceptFound,
+              ticketTempCorrelative:correlative,
+              conceptId:conceptId,
+              ticketDetailTempAmount:totalAmountDelay,
+            }
+          }else{          
+            return  {
+              conceptFound,
+              ticketTempCorrelative:correlative,
+              conceptId:conceptId,
+              ticketDetailTempAmount:totalAmountDelay,
+            }
+          }
+          break; 
+        } 
+        case 2: { 
+          //REMUNERACION 
+          const amountRemuneration=(salary-(salary/30)*ticketTempDaysNotWorked)
+          if (conceptFound){
+            return  {
+              conceptFound,
+              ticketTempCorrelative:correlative,
+              conceptId:conceptId,
+              ticketDetailTempAmount:amountRemuneration,
+            }
+          }else{
+            return  {
+              conceptFound,
+              ticketTempCorrelative:correlative,
+              conceptId:conceptId,
+              ticketDetailTempAmount:amountRemuneration,
+            }
+          }
+          break; 
+        } 
+        default: { 
+           //statements; 
+           break; 
+        } 
+     }             
+    }
 
     /**TODO: ACTUALIZAR */
-    async update(id: string, updateTicketTempDto: UpdateTicketTempDto) {  
-      //BUSCAMOS EL ID DEL CONCEPTO DE TARDANZA POR EL CODIGO """1"""    
-      const concepDelay= await this.conceptRepository.findOne({ where:{conceptCode:1}})
-      const conceptDelayId=concepDelay.conceptId
-      //BUSCAMOS EL ID DEL CONCEPTO DE REMUNERACION POR EL CODIGO """2"""
-      const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
-      const conceptRemunerationId=conceptRemuneration.conceptId;
-      //SACAMOS LOS TIEMPOS DE TARDANZA
-      const {ticketTempDelayDays,ticketTempDelayHours,ticketTempDelayMinutes,ticketTempDaysNotWorked}=updateTicketTempDto
-      //BUSCAMOS POR ID Y CARGAMOS
-      var data=await this.ticketTempRepository.preload({
-            ticketTempCorrelative:id,
+    async update(id: string, updateTicketTempDto: UpdateTicketTempDto) {
+      let data: TicketTemp
+      try {
+        //BUSCAMOS POR ID Y CARGAMOS
+        data=await this.ticketTempRepository.preload({
+          ticketTempCorrelative:id,
           ...updateTicketTempDto
-      });
-      //SI NO EXISTE MANDAR MENSAJE DE EXCEPCION
-      if(!data) throw new NotFoundException(`La busqueda con el correlativo: ${id} no ah sido encontrada`)
-      //CASO CONTRARIO BUSCAR TICKET Y SACAR LOS DATOS DE EMPLEADO
-      let employee= await this.ticketTempRepository.findOne({
-        where:{ticketTempCorrelative:id},
-        relations:['employee','employee.salary','employee.workday']          
-      })
-      //SALARIO
-      const salary=employee.employee.salary.salarySalary;
-      //JORNADA DE HORAS TRABAJADAS AL DIA
-      const HoursDay=employee.employee.workday.workdayHoursDay;
-      //MONTOS
-      const amountDelayDays=(salary/30)*ticketTempDelayDays
-      const amountDelayHours=((salary/30)/HoursDay)*ticketTempDelayHours
-      const amountDelayMinutes=(((salary/30)/HoursDay)/60)*ticketTempDelayMinutes
-      const totalAmountDelay=amountDelayDays+amountDelayHours+amountDelayMinutes
-      const amountRemuneration=(salary-(salary/30)*ticketTempDaysNotWorked)
-      //BUSCAR CONCEPTO DE TARDANZA
-      const delay=await this.ticketDetailTempRepository.findOne({
-        where:{
-          ticketTempCorrelative:id,
-          conceptId:conceptDelayId
-        }
-      })
-      //BUSCAR CONCEPTO DE REMUNERACION
-      const remuneration=await this.ticketDetailTempRepository.findOne({
-        where:{
-          ticketTempCorrelative:id,
-          conceptId:conceptRemunerationId
-        }
-      })
-      //SI EXISTE EL CONCEPTO TARDANZA ACTUALIZAMOS CASO CONTRARIO CREAMOS
-      if (delay){                
-        await this.ticketDetailTempRepository.update({
-          ticketTempCorrelative:id,
-          conceptId:conceptDelayId      
-        },{
-          ticketDetailTempAmount:totalAmountDelay,
-        })
-      }else{
-        const data =  this.ticketDetailTempRepository.create({ticketTempCorrelative:id,conceptId:conceptDelayId,ticketDetailTempAmount:totalAmountDelay})
-        await this.ticketDetailTempRepository.save(data)
-      }
-      //SI EXISTE EL CONCEPTO REMUNERACION ACTUALIZAMOS CASO CONTRARIO CREAMOS
-      if (remuneration){                
-        await this.ticketDetailTempRepository.update({
-          ticketTempCorrelative:id,
-          conceptId:conceptRemunerationId      
-        },{
-          ticketDetailTempAmount:amountRemuneration,
-        })
-      }else{
-        const data =  this.ticketDetailTempRepository.create({ticketTempCorrelative:id,conceptId:conceptRemunerationId,ticketDetailTempAmount:amountRemuneration})
-        await this.ticketDetailTempRepository.save(data)
-      }
+        });
+      } catch (error) {
+        this.handleDBExceptions(error)
+      }     
+      //SI NO EXISTE EL CORRELATIVO MANDAR MENSAJE DE EXCEPCION
+      if(!data) throw new NotFoundException(`La busqueda con el correlativo: ${id} no ah sido encontrada`)          
       try {  
+        const resultDelay = await this.addOrUpdateConceptToDetail(id,updateTicketTempDto,1)
+        const resultRemuneration = await this.addOrUpdateConceptToDetail(id,updateTicketTempDto,2)
+        if(resultDelay.conceptFound) {
+          await this.ticketDetailTempRepository.update({
+          ticketTempCorrelative:resultDelay.ticketTempCorrelative,
+          conceptId:resultDelay.conceptId      
+          },{
+            ticketDetailTempAmount:resultDelay.ticketDetailTempAmount,
+          })   
+        }
+        else{
+          const data = this.ticketDetailTempRepository.create({
+          ticketTempCorrelative:resultDelay.ticketTempCorrelative,
+          conceptId:resultDelay.conceptId ,
+          ticketDetailTempAmount:resultDelay.ticketDetailTempAmount})
+          await this.ticketDetailTempRepository.save(data)
+        }
+        if(resultRemuneration.conceptFound){
+          await this.ticketDetailTempRepository.update({
+            ticketTempCorrelative:resultRemuneration.ticketTempCorrelative,
+            conceptId:resultRemuneration.conceptId      
+          },{
+            ticketDetailTempAmount:resultRemuneration.ticketDetailTempAmount,
+          })
+        }
+        else{
+          const data =  this.ticketDetailTempRepository.create({
+            ticketTempCorrelative:resultRemuneration.ticketTempCorrelative,
+            conceptId:resultRemuneration.conceptId,
+            ticketDetailTempAmount:resultRemuneration.ticketDetailTempAmount})
+          await this.ticketDetailTempRepository.save(data)
+        }
           await this.ticketTempRepository.save(data)        
           return data;       
       } catch (error) {      
@@ -368,7 +487,7 @@ export class TicketTempService {
         }
       }
      /**TODO: ATRAPAR ERRORES DE BD */
-     private handleDBExceptions(error:any){   
+    private handleDBExceptions(error:any){   
         console.log(error) 
         if(error.code==='23505' || error.code==='23503')
           throw new BadRequestException(error.detail);

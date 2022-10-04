@@ -23,7 +23,10 @@ export class Salary{
       })
     salaryYear:            number;  
 
-    @ManyToOne(()=>EmployeeCategory,employeeCategory=>employeeCategory.employeeCategoryId)
+    @ManyToOne(
+      ()=>EmployeeCategory,
+      employeeCategory=>employeeCategory.employeeCategoryId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'employeeCategoryId'})
     employeeCategory: EmployeeCategory
 }

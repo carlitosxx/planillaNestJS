@@ -74,42 +74,7 @@ export class EmployeesService {
       data:query[0]
     }
   }
-  // async findAllActive(withStatus:string){
-  //   let query;
-  //   if(withStatus){
-  //     query= await this.employeeRepository.findAndCount({      
-  //       select:{
-  //         employeeId:true,
-  //         employeeFullname:true,
-  //         typeEmployee:{typeEmployeeDescription:true}
   
-  //       },
-  //       order:{
-  //         employeeDni:1
-  //       },
-  //       relations:['typeEmployee'],
-  //       where:{employeeStatus:parseInt(withStatus)}
-  //     })  
-  //   }else{
-  //     query= await this.employeeRepository.findAndCount({      
-  //       select:{
-  //         employeeId:true,
-  //         employeeFullname:true,
-  //         typeEmployee:{typeEmployeeDescription:true}
-  
-  //       },
-  //       order:{
-  //         employeeDni:1
-  //       },
-  //       relations:['typeEmployee'],        
-  //     })  
-  //   }
-      
-  //   return {
-  //     total:query[1],
-  //     data:query[0]
-  //   }
-  // }
   /**TODO: BUSCAR POR: */
   async findOne(term: string) {
     let employee:Employee
@@ -157,6 +122,15 @@ export class EmployeesService {
     const employee=await this.findOne(id);
     await this.employeeRepository.remove(employee)
     return {msg:'deleted employee'}
+  }
+   /**TODO: BORRAR TODO */
+   async removeAll(){
+    try {
+      await this.employeeRepository.createQueryBuilder().delete().execute()        
+      return {msg:'Borrar todo'}
+    } catch (error) {
+      this.handleDBExceptions(error)
+    }
   }
   /**TODO: ATRAPAR EXCEPCION DE BASE DE DATOS */
   private handleDBExceptions(error:any){    

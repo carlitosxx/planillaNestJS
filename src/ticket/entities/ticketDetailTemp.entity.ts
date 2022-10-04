@@ -10,7 +10,10 @@ export class TicketDetailTemp {
     @PrimaryColumn()
     ticketTempCorrelative:string
     
-    @ManyToOne(()=>TicketTemp,ticketTemp=>ticketTemp.ticketTempCorrelative)
+    @ManyToOne(
+      ()=>TicketTemp,
+      ticketTemp=>ticketTemp.ticketTempCorrelative,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'ticketTempCorrelative'})
     ticketTemp:TicketTemp
       

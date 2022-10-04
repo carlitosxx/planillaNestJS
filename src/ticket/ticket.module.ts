@@ -19,6 +19,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { Correlative } from './entities/correlative.entity';
 import { CorrelativeService } from './services/correlative.service';
 import { CorrelativeController } from './controllers/correlative.controller';
+import { Employee } from 'src/employees/entities';
 
 
 @Module({
@@ -26,7 +27,7 @@ import { CorrelativeController } from './controllers/correlative.controller';
   providers: [TicketService, ConceptService, TypeConceptService, TicketTempService, TicketDetailTempService, CorrelativeService],
   imports:[
     AuthModule,    
-    TypeOrmModule.forFeature([Ticket,TicketTemp,TicketDetailTemp,TypeConcept,Concept,Correlative])
+    TypeOrmModule.forFeature([Ticket,TicketTemp,TicketDetailTemp,TypeConcept,Concept,Correlative,Employee])
   ]
 })
 export class TicketModule {}

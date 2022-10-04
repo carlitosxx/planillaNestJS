@@ -13,7 +13,9 @@ export class PensionAdministrator{
     @Column("text")
     pensionAdministratorDescription:            string;  
 
-    @ManyToOne(()=>PensionSystem,pensionSystem=>pensionSystem.pensionSystemId)
+    @ManyToOne(()=>PensionSystem,
+    pensionSystem=>pensionSystem.pensionSystemId,
+    {onDelete:'CASCADE'})
     @JoinColumn({name:'pensionSystemId'})
     pensionSystem: PensionSystem
 }
