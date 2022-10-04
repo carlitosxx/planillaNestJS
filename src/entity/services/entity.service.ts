@@ -19,7 +19,7 @@ export class EntityService {
     private readonly entityRepository:Repository<Entitie> 
   ){}
    /**TODO: CREAR */
-   async create(createEntityDto,file){    
+   async create(createEntityDto,file){       
         createEntityDto.entityLogo=file.filename
         if(createEntityDto.entityStatus==="1"){
           const directory=join(__dirname,'../../..','static/images',file.filename)        
@@ -121,7 +121,15 @@ async remove(id: string) {
     this.handleDBExceptions(error)
   }
 }
-
+  /**TODO: BORRAR TODO */
+  async removeAll(){
+    try {
+      await this.entityRepository.createQueryBuilder().delete().execute()        
+      return {msg:'Borrar todo'}
+    } catch (error) {
+      this.handleDBExceptions(error)
+    }
+  }
 /**TODO: ATRAPAR ERRORES DE BD */
 private handleDBExceptions(error:any){    
     if(error.code==='23505' || error.code==='23503')

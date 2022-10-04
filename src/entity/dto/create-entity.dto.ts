@@ -1,5 +1,5 @@
 import { IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
-import { Financing } from "../entities";
+import { BudgetGoal, Financing } from "../entities";
 
 export class CreateEntityDto {
     @IsString()
@@ -28,5 +28,8 @@ export class CreateEntityDto {
 
     @IsString()
     financing:Financing;
+
+    @IsString()
+    budgetGoal:BudgetGoal;
 
 }

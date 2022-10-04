@@ -35,12 +35,26 @@ import { FinancingService } from 'src/entity/services/financing.service';
 import { financingData } from './data/financing';
 import { BudgetGoalService } from 'src/entity/services/budget-goal.service';
 import { budgetGoalData } from './data/budgetGoal';
+import { EntityService } from 'src/entity/services/entity.service';
+import { CreateEntityDto } from 'src/entity/dto/create-entity.dto';
+import { CreateResponsibleDto } from 'src/entity/dto/create-responsible.dto';
+import { ResponsibleService } from 'src/entity/services/responsible.service';
+import { AuthService } from 'src/auth/auth.service';
+import { RegisterAuthDto } from 'src/auth/dto/register-auth.dto';
+import { Correlative, TypeConcept } from 'src/ticket/entities';
+import { TypeConceptService } from 'src/ticket/services/type-concept.service';
+import { typeConceptData } from './data/typeConcept';
+import { CreateConceptDto, CreateCorrelativeDto } from 'src/ticket/dto';
+import { ConceptService } from 'src/ticket/services/concept.service';
+import { CorrelativeService } from 'src/ticket/services/correlative.service';
+import { correlativeData } from './data/correlative';
 
 
 @Injectable()
 export class SeedService {
  
-constructor(  
+constructor( 
+  //EMPLEADO 
   private readonly organicUnitService:OrganicUnitService,
   private readonly typeEmployeeService:TypeEmployeeService,
   private readonly conditionService:ConditionService,
@@ -54,9 +68,18 @@ constructor(
   private readonly pensionSystemService:PensionSystemService,
   private readonly pensionAdministratorService:PensionAdministratorService,
   private readonly employeeService:EmployeesService,
-
+  //ENTIDAD
   private readonly financingService:FinancingService,
-  private readonly budgetGoalService:BudgetGoalService
+  private readonly budgetGoalService:BudgetGoalService,
+  private readonly entityService:EntityService,
+  //RESPONSABLE
+  private readonly responsibleService:ResponsibleService,
+  //AUTENTICACION
+  private readonly authService:AuthService,
+  //TICKET
+  private readonly typeConceptService:TypeConceptService,
+  private readonly conceptService:ConceptService,
+  private readonly correlativeService:CorrelativeService
 ){}
   //TODO: SEED
   async executeSeed() {
@@ -90,6 +113,18 @@ constructor(
     if(!financing) throw new BadRequestException('Fallo el seed de Financiamiento')
     const budgetGoal=await this.budgetGoal();
     if(!budgetGoal) throw new BadRequestException('Fallo el seed de Meta presupuestal')
+    const entity=await this.entity();
+    if(!entity) throw new BadRequestException('Fallo el seed de Entidad')
+    const responsible=await this.responsible();
+    if(!responsible) throw new BadRequestException('Fallo el seed de Responsable')
+    const auth=await this.auth();
+    if(!auth) throw new BadRequestException('Fallo el seed de Autenticacion admin')
+    const typeConcept= await this.TypeConcept();
+    if(!typeConcept) throw new BadRequestException('Fallo el seed de Tipo de concepto')
+    const concept=await this.concept();
+    if(!concept) throw new BadRequestException('Fallo el seed de Concepto')
+    const correlative=await this.correlative();
+    if(!correlative) throw new BadRequestException('Fallo el seed del Correlativo')
     return true;
   }
 
@@ -294,13 +329,120 @@ constructor(
     }
     return true;  
   }
-  //TODO:
-
-
+  //TODO: ENTIDAD
+  private async entity(){
+    await this.entityService.removeAll()
+    var pagination:PaginationDto={
+      "page":1,
+      "size":100
+    } 
+    const arrayFinancing=await this.financingService.findAll(pagination)
+    const arrayBudgetGoal=await this.budgetGoalService.findAll(pagination)
+    const createEntity:CreateEntityDto={
+      entityRuc: '12345678907',
+      entityName: 'Universidad',
+      entityCode: '000010',
+      entityEmployer: 'Universidad Nacional Hermilio Valdizan',
+      entityStatus: 1,
+      financing: arrayFinancing.data[0],
+      budgetGoal: arrayBudgetGoal.data[0],
+    }
+    const file={
+      filename:'logo.jpg'      
+    };
+    
+    this.entityService.create(createEntity,file);
+    return true
+  }
+  //TODO: RESPONSABLE
+  private async responsible(){
+    await this.responsibleService.removeAll();
+    const createResponsible:CreateResponsibleDto={      
+      responsibleDni: "46093780",
+      responsibleFullname: "Carlos Aguirre Rivera",
+      responsibleStatus: 1,
+      responsibleSignature: "firma.png"
+    }
+    const file={
+      filename:'firma.png'      
+    };
+    this.responsibleService.create(createResponsible,file)
+    return true
+  }
+  //TODO: ADMIN USER
+  private async auth(){
+    await this.authService.removeAll()
+    const registerAuthDto:RegisterAuthDto={    
+      authFullname:"admin",
+      authEmail:"admin@admin.com",
+      authPassword:"123456",   
+      authRole:["dev","user","admin"]
+    }
+    this.authService.registerUser(registerAuthDto)
+    return true
+  }
+  //TODO: TIPO DE CONCEPTO
+  private async TypeConcept(){
+    await this.typeConceptService.removeAll()
+    const object=typeConceptData    
+    for (const element of object.data){
+      this.typeConceptService.create(element);
+    }
+    return true;   
+  }
+  //TODO: CONCEPTO
+  private async concept(){
+    await this.conditionService.removeAll()
+    var pagination:PaginationDto={
+      "page":1,
+      "size":100
+    } 
+    const arrayPensionAdministrator=await this.typeConceptService.findAll(pagination);
+    let conceptRemuneration:CreateConceptDto
+    let conceptDelay:CreateConceptDto
+    arrayPensionAdministrator.data.forEach((element,index) => {
+      if (element.typeConceptDescription==='INGRESOS'){
+        conceptRemuneration={
+          conceptCodeSiaf: "000002",
+          conceptCodePlame: "000002",
+          conceptGlosa:"Remuneracion basica",
+          conceptDescription: "Remuneracion con descuento de asistencias",
+          conceptIsDiscounted:true,
+          conceptIsCalculated: true,
+          conceptCode: 2,
+          typeConcept:arrayPensionAdministrator.data[index]
+        }
+      }
+      if (element.typeConceptDescription==='DESCUENTOS'){
+        conceptDelay={
+          conceptCodeSiaf: "000001",
+          conceptCodePlame: "000001",
+          conceptGlosa:"Tardanza",
+          conceptDescription: "Tardanza",
+          conceptIsDiscounted:false,
+          conceptIsCalculated: true,
+          conceptCode: 1,
+          typeConcept:arrayPensionAdministrator.data[index]
+        }
+      }
+    });    
+    await this.conceptService.create(conceptDelay) 
+    await this.conceptService.create(conceptRemuneration) 
+    return true
+  }
+  //TODO: CORRELATIVO
+  private async correlative(){    
+    await this.correlativeService.removeAll()
+    const object=correlativeData    
+    for (const element of object.data){
+      this.correlativeService.create(element);
+    }
+    return true;  
+  }
 
 
   //TODO: NUMERO ALEATORIO
-  randomIntFromInterval(min, max) { // min and max included 
-    return Math.floor(Math.random() * (max - min + 1) + min)
-  }
+  // randomIntFromInterval(min, max) { // min and max included 
+  //   return Math.floor(Math.random() * (max - min + 1) + min)
+  // }
 }

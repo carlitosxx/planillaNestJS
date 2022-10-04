@@ -19,7 +19,7 @@ export class ResponsibleService {
         private readonly responsibleRepository:Repository<Responsible>
     ){}
      /**TODO: CREAR */
-     async create(createResponsibleDto,file:Express.Multer.File){
+     async create(createResponsibleDto,file){
       createResponsibleDto.responsibleSignature=file.filename      
       if(createResponsibleDto.responsibleStatus==1){
         // const directory=join(__dirname,'../../..','static/images',file.filename)        
@@ -115,7 +115,15 @@ export class ResponsibleService {
         this.handleDBExceptions(error)
       }
     }
-
+     /**TODO: BORRAR TODO */
+  async removeAll(){
+    try {
+      await this.responsibleRepository.createQueryBuilder().delete().execute()        
+      return {msg:'Borrar todo'}
+    } catch (error) {
+      this.handleDBExceptions(error)
+    }
+  }
     /**TODO: ATRAPAR ERRORES DE BD */
     private handleDBExceptions(error:any){    
         if(error.code==='23505' || error.code==='23503')

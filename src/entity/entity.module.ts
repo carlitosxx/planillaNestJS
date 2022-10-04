@@ -16,6 +16,6 @@ import { AuthModule } from 'src/auth/auth.module';
   providers: [EntityService, BudgetGoalService, FinancingService, ResponsibleService],
   imports:[AuthModule,
     TypeOrmModule.forFeature([Entitie,BudgetGoal,Financing,Responsible])],
-  exports:[FinancingService,BudgetGoalService]
+  exports:[FinancingService,BudgetGoalService,EntityService,ResponsibleService]
 })
 export class EntityModule {}

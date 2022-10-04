@@ -31,11 +31,17 @@ export class Entitie {
       })  
     entityStatus:          number;
 
-    @ManyToOne(()=>Financing,financing=>financing.financingId)
+    @ManyToOne(
+      ()=>Financing,
+      financing=>financing.financingId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'financingId'})
     financing:Financing;
 
-    @ManyToOne(()=>BudgetGoal,budgetGoal=>budgetGoal.budgetGoalId)
+    @ManyToOne(
+      ()=>BudgetGoal,
+      budgetGoal=>budgetGoal.budgetGoalId,
+      {onDelete:'CASCADE'})
     @JoinColumn({name:'budgetGoalId'})
     budgetGoal:BudgetGoal;
 }

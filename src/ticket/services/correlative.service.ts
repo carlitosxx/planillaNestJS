@@ -37,7 +37,6 @@ export class CorrelativeService {
                 correlativeSerie:correlativeSerie.toLowerCase()}
             })
         if (!data) throw new NotFoundException('The correlative was not found')    
-        console.log(data)
         return data       
       }
     /**TODO: ACTUALIZAR */
@@ -57,7 +56,16 @@ export class CorrelativeService {
       } catch (error) {      
         this.handleDBExceptions(error)
       }
-    } 
+    }
+       /**TODO: BORRAR TODO */
+       async removeAll(){
+        try {
+          await this.correlativeRepository.createQueryBuilder().delete().execute()        
+          return {msg:'Borrar todo'}
+        } catch (error) {
+          this.handleDBExceptions(error)
+        }
+      } 
      /**TODO: ATRAPAR ERRORES DE BD */
      private handleDBExceptions(error:any){    
         if(error.code==='23505' || error.code==='23503')

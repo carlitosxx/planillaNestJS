@@ -16,8 +16,7 @@ export class AuthService {
       private jwtAuthService:JwtService
   ){}
  async registerUser(registerAuthDto:RegisterAuthDto){
-    try {
-      console.log(registerAuthDto)
+    try {     
       const {authPassword}=registerAuthDto
       const plainToHash=await bcrypt.hashSync(authPassword,10)
       registerAuthDto={...registerAuthDto,authPassword:plainToHash}
@@ -48,6 +47,15 @@ export class AuthService {
   const token=this.jwtAuthService.sign(payload);
   return token;
  }
+  /**TODO: BORRAR TODO */
+  async removeAll(){
+    try {
+      await this.authRepository.createQueryBuilder().delete().execute()        
+      return {msg:'Borrar todo'}
+    } catch (error) {
+      this.handleDBExceptions(error)
+    }
+  }
  private handleDBExceptions(error:any):never{   
   console.log(error) 
   if(error.code==='23505' || error.code==='23503')

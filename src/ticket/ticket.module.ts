@@ -28,6 +28,7 @@ import { Employee } from 'src/employees/entities';
   imports:[
     AuthModule,    
     TypeOrmModule.forFeature([Ticket,TicketTemp,TicketDetailTemp,TypeConcept,Concept,Correlative,Employee])
-  ]
+  ],
+  exports:[TypeConceptService,ConceptService,CorrelativeService]
 })
 export class TicketModule {}

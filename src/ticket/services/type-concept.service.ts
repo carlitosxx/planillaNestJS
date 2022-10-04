@@ -69,6 +69,7 @@ export class TypeConceptService {
         this.handleDBExceptions(error)
       }
     }
+    
     /**TODO: BORRAR */
     async remove(id: string) {
         const typeConcept=await this.findOne(id);
@@ -80,8 +81,18 @@ export class TypeConceptService {
         }
       }
 
-     /**TODO: ATRAPAR ERRORES DE BD */
-     private handleDBExceptions(error:any){    
+    /**TODO: BORRAR TODO */
+    async removeAll(){
+      try {
+        await this.typeConceptRepository.createQueryBuilder().delete().execute()        
+        return {msg:'Borrar todo'}
+      } catch (error) {
+        this.handleDBExceptions(error)
+      }
+    }
+
+    /**TODO: ATRAPAR ERRORES DE BD */
+    private handleDBExceptions(error:any){    
         if(error.code==='23505' || error.code==='23503')
           throw new BadRequestException(error.detail);
         this.logger.error(error);

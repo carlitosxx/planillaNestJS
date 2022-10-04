@@ -7,7 +7,7 @@ export class CreateResponsibleDto{
 
     @IsString()
     @MaxLength(100)
-    responsibleFullName:    string;
+    responsibleFullname:    string;
 
     @IsNumber()
     responsibleStatus:      number;

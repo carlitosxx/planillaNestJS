@@ -30,7 +30,10 @@ export class Concept {
     @Column({ type: 'numeric', nullable: true})
     conceptCode:number
     
-    @ManyToOne(()=>TypeConcept,typeConcept=>typeConcept.typeConceptId)
+    @ManyToOne(
+        ()=>TypeConcept,
+        typeConcept=>typeConcept.typeConceptId,
+        {onDelete:'CASCADE'})
     @JoinColumn({name:'typeConceptId'})
     typeConcept:TypeConcept;
 }
