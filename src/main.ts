@@ -1,5 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import express, { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -12,11 +13,13 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     })
    );
-   app.enableCors({
+  app.enableCors({
     allowedHeaders: '*',
     origin: '*',
     credentials: true,
-  }); 
+  });
+  app.use(json({ limit: '50mb' }));  
+  app.use(urlencoded({limit: '50mb'})); 
   await app.listen(process.env.PORT);
   logger.log(`App running on port:${process.env.PORT}`)
 }
