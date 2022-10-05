@@ -13,4 +13,12 @@
 ``` 
 docker-compose up -d
 ```
-5. Levantar:```yarn start:dev```
+5. ejecutar seed para rellenar los datos de pruebas
+``` 
+http://127.0.0.1:3000/api/v1/seed
+```
+6. ejectuar backend:
+
+```
+yarn start:dev
+```

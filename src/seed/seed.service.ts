@@ -48,6 +48,7 @@ import { CreateConceptDto, CreateCorrelativeDto } from 'src/ticket/dto';
 import { ConceptService } from 'src/ticket/services/concept.service';
 import { CorrelativeService } from 'src/ticket/services/correlative.service';
 import { correlativeData } from './data/correlative';
+import { create } from 'domain';
 
 
 @Injectable()
@@ -121,10 +122,11 @@ constructor(
     if(!auth) throw new BadRequestException('Fallo el seed de Autenticacion admin')
     const typeConcept= await this.TypeConcept();
     if(!typeConcept) throw new BadRequestException('Fallo el seed de Tipo de concepto')
-    const concept=await this.concept();
-    if(!concept) throw new BadRequestException('Fallo el seed de Concepto')
     const correlative=await this.correlative();
     if(!correlative) throw new BadRequestException('Fallo el seed del Correlativo')
+    const concept=await this.concept();
+    if(!concept) throw new BadRequestException('Fallo el seed de Concepto')
+   
     return true;
   }
 
@@ -307,6 +309,7 @@ constructor(
         salary:arraySalary.data[Math.floor(Math.random()*arrayWorkday.data.length)],
         pensionAdministrator:arrayPensionAdministrator.data[Math.floor(Math.random()*arrayWorkday.data.length)],
       }
+      // console.log(createEmployeeDto)
       this.employeeService.create(createEmployeeDto);      
     }
     return true 
@@ -392,7 +395,7 @@ constructor(
   }
   //TODO: CONCEPTO
   private async concept(){
-    await this.conditionService.removeAll()
+    await this.conceptService.removeAll()
     var pagination:PaginationDto={
       "page":1,
       "size":100
