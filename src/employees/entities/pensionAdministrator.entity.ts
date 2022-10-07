@@ -4,14 +4,29 @@ import { PensionSystem } from './pensionSystem.entity';
 @Entity()
 export class PensionAdministrator{
     @PrimaryGeneratedColumn('uuid')    
-    pensionAdministratorId:            string;
+    pensionAdministratorId:string;
     
     @Index({ unique: true })
     @Column("text")
-    pensionAdministratorCode:          string;
+    pensionAdministratorCode:string;
 
     @Column("text")
-    pensionAdministratorDescription:            string;  
+    pensionAdministratorDescription:string;  
+
+    @Column({type:"numeric",nullable:true})
+    pensionAdministratorComVar:number
+
+    @Column({type:"numeric",nullable:true})
+    pensionAdministratorContriManda:number
+
+    @Column({type:"numeric",nullable:true})
+    pensionAdministratorInsurance:number
+
+    @Column({type:"numeric",nullable:true})
+    pensionAdministratorAnnualOnBalance:number
+    
+    @Column({type:"numeric",nullable:true})
+    pensionAdministratorDiscount?:number
 
     @ManyToOne(()=>PensionSystem,
     pensionSystem=>pensionSystem.pensionSystemId,

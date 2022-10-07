@@ -32,6 +32,9 @@ export class Employee {
     @Column("text")
     employeeCUSPP: string;
 
+    @Column({type:"bool",nullable:true})
+    employeeTypeCommission: boolean;
+
     @Column("text")
     employeeAIRHSP: string;
 

@@ -9,6 +9,7 @@ import { EntityModule } from './entity/entity.module';
 import { AuthModule } from './auth/auth.module';
 import { TicketModule } from './ticket/ticket.module';
 import { SeedModule } from './seed/seed.module';
+import { VariablesModule } from './variables/variables.module';
 import {ServeStaticModule}from '@nestjs/serve-static' 
 
 
@@ -34,8 +35,11 @@ import {ServeStaticModule}from '@nestjs/serve-static'
     EntityModule,
     AuthModule,
     TicketModule,
-    SeedModule
+    SeedModule,
+    VariablesModule,
+    
   ],
+  providers: [],
 
 })
 export class AppModule {}

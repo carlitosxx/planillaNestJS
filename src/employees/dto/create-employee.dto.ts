@@ -1,4 +1,4 @@
-import { IsDate, IsDateString, IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { IsBoolean, IsDate, IsDateString, IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 import { TypeEmployee,OrganicUnit, Condition, Salary, PensionAdministrator, Workday, Position, Establishment, OccupationalGroup, LaborRegime } from "../entities";
 
 
@@ -19,6 +19,10 @@ export class CreateEmployeeDto {
 
     @IsString()
     employeeCUSPP:      string;
+
+    @IsBoolean()
+    @IsOptional()
+    employeeTypeCommission?: boolean;
     
     @IsString()
     employeeAIRHSP:     string;

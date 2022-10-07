@@ -8,5 +8,9 @@ export const pensionSystemData={
             "pensionSystemCode": "000002",
             "pensionSystemDescription": "ONP"
         },
+        {
+            "pensionSystemCode": "000003",
+            "pensionSystemDescription": "MONTEPIO"
+        }
     ]
 }

@@ -166,14 +166,14 @@ export class TicketTempService {
         } catch (error) {       
           this.handleDBExceptions(error);
         }
-        if(verifyMonthYear) throw new BadRequestException('The employee has a ticket in this Date')  
+        if(verifyMonthYear) throw new BadRequestException('El empleado tiene una boleta temporal en esta fecha')  
         //OBTENER EL CORRELATIVO
         const correlative= await this.correlativeRepository.findOne({
         where:{
             correlativeYear:createBatchTicketTemp.ticketTempYear,
             correlativeSerie:"t"}
         })
-        if(!correlative) throw new NotFoundException(`correlative with serie: t and year:${createBatchTicketTemp.ticketTempYear} not found`)      
+        if(!correlative) throw new NotFoundException(`El correlativo con serie: t y año:${createBatchTicketTemp.ticketTempYear} no fue encontrado`)
         const numberToString= (correlative.correlativeNumber+1).toString().padStart(5,'0');
         newTicket.ticketTempCorrelative=`${correlative.correlativeSerie}${correlative.correlativeYear}-${numberToString}`      
         const verifyTicket=await this.ticketTempRepository.findBy({ticketTempCorrelative:newTicket.ticketTempCorrelative})
@@ -192,7 +192,7 @@ export class TicketTempService {
               this.handleDBExceptions(error);
           }
         }
-        return 'se agrego'; 
+        return 'Se inserto correctamente'; 
     }
 
     /**TODO: ACTUALIZAR POR LOTE LA BOLETA Y AGREGAR CONCEPTOS DE REMUNERACION Y TARDANZA */
@@ -203,16 +203,21 @@ export class TicketTempService {
       //BUSCAMOS EL ID DEL CONCEPTO DE REMUNERACION POR EL CODIGO """2"""
       const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
       const conceptRemunerationId=conceptRemuneration.conceptId;
+       //BUSCAMOS EL ID DEL CONCEPTO DE PENSION POR EL CODIGO """3"""
+       const conceptPension=await this.conceptRepository.findOne({where:{conceptCode:3}})
+       const conceptPensionId=conceptPension.conceptId;
       //CICLO FOR DEL ARREGLO DE TICKETS
       for (const element of updateArrayOfDayWorkedDelay.ticketData){
         //SE BUSCA EL EMPLEADO POR EL CORRELATIVO DE LA BOLETA TEMPORAL        
         let employee= await this.ticketTempRepository.findOne({
           where:{ticketTempCorrelative:element.ticketTempCorrelative},
-          relations:['employee','employee.salary','employee.workday']          
+          relations:['employee','employee.salary','employee.workday','employee.pensionAdministrator','employee.pensionAdministrator.pensionSystem']          
         })
-        if (!employee) throw new NotFoundException(`No se encontro este correlativo ${element.ticketTempCorrelative}`)        
+        if (!employee) throw new NotFoundException(`No se encontro este correlativo ${element.ticketTempCorrelative}`) 
+        //OBTERNET EL SALARIO    
         const salary=employee.employee.salary.salarySalary;
         const HoursDay=employee.employee.workday.workdayHoursDay;
+        //CREAR EL QUERYRUNNER
         const queryRunner=this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -269,6 +274,39 @@ export class TicketTempService {
             conceptId:conceptDelayId,
             ticketDetailTempAmount:totalAmountDelay
           })
+          //SE CALCULA LA PENSION
+          //amountRemuneration
+          console.log(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode)
+          //AFP
+          if(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode==="000001"){
+            //SI ES PRIMA
+            if (employee.employee.pensionAdministrator.pensionAdministratorCode==="000005"){
+              //PREGUNTAR TIPO DE COMISION(flujo=true o mixta=false
+              if( employee.employee.employeeTypeCommission===true){
+
+              }else{
+
+              }
+            
+              console.log( employee.employee.employeeTypeCommission)
+            }
+            //SI ES INTEGRA
+            if (employee.employee.pensionAdministrator.pensionAdministratorCode==="000002"){
+              //PREGUNTAR TIPO DE COMISION(flujo=true o mixta=false
+              if( employee.employee.employeeTypeCommission===true){
+
+              }else{
+
+              }
+            }
+          }
+          //ONP
+          if (employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode==="000002")
+          {
+            
+          } 
+          //MMONTEPIO
+          if(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode==="000003")           
           /**
            * GUARDAMOS LOS 3 CAMBIOS(ACTUALIZACION DEL TICKET Y LA AGREGACION DE LOS 2 
            * CONCEPTOS AL DETALLE DE BOLETA) SI FALLA APLICAMOS ROLLBACK

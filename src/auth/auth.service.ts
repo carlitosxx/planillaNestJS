@@ -30,18 +30,14 @@ export class AuthService {
     }
  }
 
- async loginUser(loginAuthDto:LoginAuthDto){
-  
+ async loginUser(loginAuthDto:LoginAuthDto){  
     const {authEmail,authPassword}=loginAuthDto
     const findUser=await this.authRepository.findOneBy({authEmail});
     if(!findUser) throw new NotFoundException(`User not found`)
     const checkPassword=await bcrypt.compare(authPassword,findUser.authPassword)
     if(!checkPassword) {throw new NotFoundException('password invalid')}
     delete findUser.authPassword
-    return{...findUser,token: this.getJwtToken({authId:findUser.authId})}
-    // const payload={authId:findUser.authId,auth}
-    // const token=await this.jwtAuthService.sign()
- 
+    return{...findUser,token: this.getJwtToken({authId:findUser.authId})} 
  }
  private getJwtToken(payload:JwtPayload){
   const token=this.jwtAuthService.sign(payload);

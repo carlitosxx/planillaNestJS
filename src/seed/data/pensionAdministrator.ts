@@ -3,27 +3,50 @@ export const pensionAdministratorData={
         {
             "pensionAdministratorCode":"000001",
             "pensionAdministratorDescription":"estado",
+            "pensionAdministratorDiscount":13,
             "pensionSystem":""
         },
         {
             "pensionAdministratorCode":"000002",
             "pensionAdministratorDescription":"integra",
+            "pensionAdministratorComVar":1.55,
+            "pensionAdministratorContriManda":10,
+            "pensionAdministratorInsurance":1.74,
+            "pensionAdministratorAnnualOnBalance":0.79,
             "pensionSystem":""
         },
         {
             "pensionAdministratorCode":"000003",
             "pensionAdministratorDescription":"profuturo",
+            "pensionAdministratorComVar":1.69,
+            "pensionAdministratorContriManda":10,
+            "pensionAdministratorInsurance":1.74,
+            "pensionAdministratorAnnualOnBalance":1.20,
             "pensionSystem":""
         },
         {
             "pensionAdministratorCode":"000004",
             "pensionAdministratorDescription":"habitat",
+            "pensionAdministratorComVar":1.47,
+            "pensionAdministratorContriManda":10,
+            "pensionAdministratorInsurance":1.74,
+            "pensionAdministratorAnnualOnBalance":1.25,
             "pensionSystem":""
         },
         {
             "pensionAdministratorCode":"000005",
             "pensionAdministratorDescription":"prima",
+            "pensionAdministratorComVar":1.60,
+            "pensionAdministratorContriManda":10,
+            "pensionAdministratorInsurance":1.74,
+            "pensionAdministratorAnnualOnBalance":1.25,
             "pensionSystem":""
         },
+        {
+            "pensionAdministratorCode":"000006",
+            "pensionAdministratorDescription":"montepio",
+            "pensionAdministratorDiscount":27,
+            "pensionSystem":""
+        }
     ]
 }

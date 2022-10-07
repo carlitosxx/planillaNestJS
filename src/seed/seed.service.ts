@@ -48,7 +48,7 @@ import { CreateConceptDto, CreateCorrelativeDto } from 'src/ticket/dto';
 import { ConceptService } from 'src/ticket/services/concept.service';
 import { CorrelativeService } from 'src/ticket/services/correlative.service';
 import { correlativeData } from './data/correlative';
-import { create } from 'domain';
+
 
 
 @Injectable()
@@ -259,6 +259,9 @@ constructor(
       const pensionSystemId=new PensionSystem()
       if(element.pensionAdministratorCode==="000001"){
         pensionSystemId.pensionSystemId=result.data[1].pensionSystemId
+
+      }else if(element.pensionAdministratorCode==="000006"){
+        pensionSystemId.pensionSystemId=result.data[2].pensionSystemId
       }else{
         pensionSystemId.pensionSystemId=result.data[0].pensionSystemId
       }      
@@ -266,6 +269,18 @@ constructor(
         pensionAdministratorCode:element.pensionAdministratorCode,
         pensionAdministratorDescription:element.pensionAdministratorDescription,
         pensionSystem: pensionSystemId
+      }
+      if(element.pensionAdministratorCode==="000001" ){
+        pensionAdministratorDto.pensionAdministratorDiscount=element.pensionAdministratorDiscount
+      }
+      if(element.pensionAdministratorCode==="000006"){
+        pensionAdministratorDto.pensionAdministratorDiscount=element.pensionAdministratorDiscount
+      }
+      if(element.pensionAdministratorCode === "000002","000003","000004","000005"){
+        pensionAdministratorDto.pensionAdministratorComVar=element.pensionAdministratorComVar;
+        pensionAdministratorDto.pensionAdministratorContriManda=element.pensionAdministratorContriManda;
+        pensionAdministratorDto.pensionAdministratorInsurance=element.pensionAdministratorInsurance;
+        pensionAdministratorDto.pensionAdministratorAnnualOnBalance=element.pensionAdministratorAnnualOnBalance
       }
       this.pensionAdministratorService.create(pensionAdministratorDto);      
     } 
@@ -291,13 +306,13 @@ constructor(
     const arrayPensionAdministrator=await this.pensionAdministratorService.findAll(pagination);
     let start: Date
     start = new Date(Date.now());
-    for (var i = 1; i < totalEmployee; i++) {
+    for (var i = 1; i < totalEmployee; i++) {      
       const createEmployeeDto:CreateEmployeeDto={
         employeeFullname:faker.name.fullName(),
         employeeDni: (i).toString().padStart(8,'0'),
         employeeEntryDate:start,
         employeeCUSPP:(i).toString().padStart(12,'0'),
-        employeeAIRHSP:(i).toString().padStart(6,'0'),
+        employeeAIRHSP:(i).toString().padStart(6,'0'),        
         typeEmployee:arrayTypeEmployee.data[Math.floor(Math.random()*arrayTypeEmployee.data.length)],
         organicUnit:arrayOrganicUnit.data[Math.floor(Math.random()*arrayOrganicUnit.data.length)],
         condition:arrayCondicion.data[Math.floor(Math.random()*arrayCondicion.data.length)],
@@ -306,10 +321,13 @@ constructor(
         establishment:arrayEstablishment.data[Math.floor(Math.random()*arrayEstablishment.data.length)],
         position:arrayPosition.data[Math.floor(Math.random()*arrayPosition.data.length)],
         workday:arrayWorkday.data[Math.floor(Math.random()*arrayWorkday.data.length)],
-        salary:arraySalary.data[Math.floor(Math.random()*arrayWorkday.data.length)],
-        pensionAdministrator:arrayPensionAdministrator.data[Math.floor(Math.random()*arrayWorkday.data.length)],
+        salary:arraySalary.data[Math.floor(Math.random()*arraySalary.data.length)],
+        pensionAdministrator:arrayPensionAdministrator.data[Math.floor(Math.random()*arrayPensionAdministrator.data.length)],
       }
-      // console.log(createEmployeeDto)
+      if(createEmployeeDto.pensionAdministrator.pensionAdministratorCode!='000001' && createEmployeeDto.pensionAdministrator.pensionAdministratorCode != '000006'){        
+        createEmployeeDto.employeeTypeCommission=Math.random() < 0.5
+      }
+      
       this.employeeService.create(createEmployeeDto);      
     }
     return true 
@@ -401,8 +419,9 @@ constructor(
       "size":100
     } 
     const arrayPensionAdministrator=await this.typeConceptService.findAll(pagination);
-    let conceptRemuneration:CreateConceptDto
-    let conceptDelay:CreateConceptDto
+    let conceptRemuneration:CreateConceptDto;
+    let conceptDelay:CreateConceptDto;
+    let conceptPension:CreateConceptDto;
     arrayPensionAdministrator.data.forEach((element,index) => {
       if (element.typeConceptDescription==='INGRESOS'){
         conceptRemuneration={
@@ -427,10 +446,21 @@ constructor(
           conceptCode: 1,
           typeConcept:arrayPensionAdministrator.data[index]
         }
+        conceptPension={
+          conceptCodeSiaf: "000003",
+          conceptCodePlame: "000003",
+          conceptGlosa:"Pension",
+          conceptDescription: "Descuento de la pension AFP,ONP o MONTEPIO",
+          conceptIsDiscounted:false,
+          conceptIsCalculated: true,
+          conceptCode: 3,
+          typeConcept:arrayPensionAdministrator.data[index]
+        }
       }
     });    
     await this.conceptService.create(conceptDelay) 
-    await this.conceptService.create(conceptRemuneration) 
+    await this.conceptService.create(conceptRemuneration)
+    await this.conceptService.create(conceptPension) 
     return true
   }
   //TODO: CORRELATIVO
