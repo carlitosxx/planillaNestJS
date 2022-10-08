@@ -419,9 +419,15 @@ constructor(
       "size":100
     } 
     const arrayPensionAdministrator=await this.typeConceptService.findAll(pagination);
+    console.log(arrayPensionAdministrator);
     let conceptRemuneration:CreateConceptDto;
     let conceptDelay:CreateConceptDto;
-    let conceptPension:CreateConceptDto;
+    // let conceptPension:CreateConceptDto;
+    let conceptContributionMandadory:CreateConceptDto;
+    let conceptCommissionVariable:CreateConceptDto;
+    let conceptInsurance:CreateConceptDto;
+    let conceptAnnualOnBalance:CreateConceptDto;
+    let conceptDiscount:CreateConceptDto;
     arrayPensionAdministrator.data.forEach((element,index) => {
       if (element.typeConceptDescription==='INGRESOS'){
         conceptRemuneration={
@@ -446,21 +452,66 @@ constructor(
           conceptCode: 1,
           typeConcept:arrayPensionAdministrator.data[index]
         }
-        conceptPension={
+        conceptContributionMandadory={
           conceptCodeSiaf: "000003",
           conceptCodePlame: "000003",
-          conceptGlosa:"Pension",
-          conceptDescription: "Descuento de la pension AFP,ONP o MONTEPIO",
+          conceptGlosa:"AFP Aporte obligatorio",
+          conceptDescription: "AFP Aporte obligatorio",
           conceptIsDiscounted:false,
           conceptIsCalculated: true,
           conceptCode: 3,
+          typeConcept:arrayPensionAdministrator.data[index]
+        }
+        conceptCommissionVariable={
+          conceptCodeSiaf: "000004",
+          conceptCodePlame: "000004",
+          conceptGlosa:"AFP Comision variable",
+          conceptDescription: "AFP Comision Variable",
+          conceptIsDiscounted:false,
+          conceptIsCalculated: true,
+          conceptCode: 4,
+          typeConcept:arrayPensionAdministrator.data[index]
+        }
+        conceptInsurance={
+          conceptCodeSiaf: "000005",
+          conceptCodePlame: "000005",
+          conceptGlosa:"AFP Prima de seguro",
+          conceptDescription: "AFP Prima de seguro",
+          conceptIsDiscounted:false,
+          conceptIsCalculated: true,
+          conceptCode: 5,
+          typeConcept:arrayPensionAdministrator.data[index]
+        }
+        conceptAnnualOnBalance={
+          conceptCodeSiaf: "000006",
+          conceptCodePlame: "000006",
+          conceptGlosa:"AFP Comision anual sobre saldo",
+          conceptDescription: "AFP Comision anual sobre saldo",
+          conceptIsDiscounted:false,
+          conceptIsCalculated: true,
+          conceptCode: 6,
+          typeConcept:arrayPensionAdministrator.data[index]
+        }
+        conceptDiscount={
+          conceptCodeSiaf: "000007",
+          conceptCodePlame: "000007",
+          conceptGlosa:"Fondo de pension",
+          conceptDescription: "Fondo de pension",
+          conceptIsDiscounted:false,
+          conceptIsCalculated: true,
+          conceptCode: 7,
           typeConcept:arrayPensionAdministrator.data[index]
         }
       }
     });    
     await this.conceptService.create(conceptDelay) 
     await this.conceptService.create(conceptRemuneration)
-    await this.conceptService.create(conceptPension) 
+    // await this.conceptService.create(conceptPension) 
+    await this.conceptService.create(conceptCommissionVariable)
+    await this.conceptService.create(conceptContributionMandadory)
+    await this.conceptService.create(conceptInsurance)
+    await this.conceptService.create(conceptAnnualOnBalance)
+    await this.conceptService.create(conceptDiscount)
     return true
   }
   //TODO: CORRELATIVO

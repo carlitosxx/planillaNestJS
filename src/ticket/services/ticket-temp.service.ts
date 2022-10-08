@@ -203,9 +203,9 @@ export class TicketTempService {
       //BUSCAMOS EL ID DEL CONCEPTO DE REMUNERACION POR EL CODIGO """2"""
       const conceptRemuneration=await this.conceptRepository.findOne({where:{conceptCode:2}})
       const conceptRemunerationId=conceptRemuneration.conceptId;
-       //BUSCAMOS EL ID DEL CONCEPTO DE PENSION POR EL CODIGO """3"""
-       const conceptPension=await this.conceptRepository.findOne({where:{conceptCode:3}})
-       const conceptPensionId=conceptPension.conceptId;
+       //BUSCAMOS EL ID DEL CONCEPTO DE AFP APORTE OBLIGATORIO """3"""
+       const conceptContributionMandadory=await this.conceptRepository.findOne({where:{conceptCode:3}})
+       const conceptContributionMandadoryId=conceptContributionMandadory.conceptId;
       //CICLO FOR DEL ARREGLO DE TICKETS
       for (const element of updateArrayOfDayWorkedDelay.ticketData){
         //SE BUSCA EL EMPLEADO POR EL CORRELATIVO DE LA BOLETA TEMPORAL        
@@ -275,15 +275,20 @@ export class TicketTempService {
             ticketDetailTempAmount:totalAmountDelay
           })
           //SE CALCULA LA PENSION
-          //amountRemuneration
-          console.log(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode)
           //AFP
           if(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode==="000001"){
             //SI ES PRIMA
             if (employee.employee.pensionAdministrator.pensionAdministratorCode==="000005"){
               //PREGUNTAR TIPO DE COMISION(flujo=true o mixta=false
               if( employee.employee.employeeTypeCommission===true){
-
+                const percentContriManda=employee.employee.pensionAdministrator.pensionAdministratorContriManda
+                
+                
+                // const conceptCommissionVariable
+                // const conceptInsurance
+                // sumatoria de ingresos afectos
+                // const incomeAffected=amountRemuneration+totalaffected
+                const conceptContributionMandatory=percentContriManda*(amountRemuneration)//porcentaje de aporte obligatorio*ingresos afectos del empleado
               }else{
 
               }
@@ -306,14 +311,21 @@ export class TicketTempService {
             
           } 
           //MMONTEPIO
-          if(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode==="000003")           
+          // if(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode==="000003")  
+                             
           /**
            * GUARDAMOS LOS 3 CAMBIOS(ACTUALIZACION DEL TICKET Y LA AGREGACION DE LOS 2 
            * CONCEPTOS AL DETALLE DE BOLETA) SI FALLA APLICAMOS ROLLBACK
           **/            
-          await queryRunner.manager.save(queryRemuneration);
+          await queryRunner.manager.save(queryRemuneration);          
           await queryRunner.manager.save(queryDelay);
-          await queryRunner.commitTransaction();          
+          await queryRunner.commitTransaction();   
+          const detalledespues=await this.ticketDetailTempRepository.find({
+            where:{
+              ticketTempCorrelative:element.ticketTempCorrelative
+            }
+          })
+          console.log(detalledespues)       
         } catch (error) {     
           await queryRunner.rollbackTransaction()     
           this.handleDBExceptions(error);
