@@ -275,11 +275,11 @@ export class TicketTempService {
             ticketDetailTempAmount:totalAmountDelay
           })
           //SE CALCULA LA PENSION
-          //AFP
+          //000001=AFP
           if(employee.employee.pensionAdministrator.pensionSystem.pensionSystemCode==="000001"){
-            //SI ES PRIMA
+            //000005= ES PRIMA
             if (employee.employee.pensionAdministrator.pensionAdministratorCode==="000005"){
-              //PREGUNTAR TIPO DE COMISION(flujo=true o mixta=false
+              //PREGUNTAR TIPO DE COMISION(flujo=true o mixta=false)
               if( employee.employee.employeeTypeCommission===true){
                 const percentContriManda=employee.employee.pensionAdministrator.pensionAdministratorContriManda
                 
